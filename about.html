@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — Beatrice Mundo</title>
+<meta name="description" content="About Beatrice Mundo, PhD candidate in French Studies at the CUNY Graduate Center.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Marcellus&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">Beatrice Mundo</a>
+    <button class="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
+    <nav class="nav" id="nav" aria-label="Main"><a href="index.html">Home</a><a href="projects.html">Projects</a><a href="teaching.html">Teaching</a><a href="about.html" aria-current="page">About</a></nav>
+  </div>
+</header>
+<main id="main">
+<section class="about">
+  <div class="wrap">
+    <div>
+      <h1>Who I am</h1>
+      <p>I’m a PhD candidate in French Studies at the CUNY Graduate Center. My dissertation looks at the paradox of Italianism and Italophobia in sixteenth-century France. I work on early modern epistolary culture, queenship, and women’s writing, combining archival research with digital humanities methods.</p>
+      <p>My digital work uses tools like metadata structuring, text encoding, and data visualization. I created <a href="https://beatricemundo.github.io/lettrescatherinemedicis/" rel="noopener">Digital Accessibility of Catherine de’ Medici’s Correspondence</a>, an open-access archive that lets users search and explore the Queen Mother’s letters by recipient, gender, date, and other metadata. Before that, I developed <a href="https://beatricemundo.github.io/lettresmedicis6466/" rel="noopener">Lettres de Catherine de Médicis (1564–1566)</a>, a prototype database built during my time at Université Gustave Eiffel.</p>
+      <p>I hold a Master’s in Research from Université Gustave Eiffel and a BA in Foreign Languages and Literatures from the University of Udine. I’ve presented my research in Europe and the U.S., and I teach French and Italian at Baruch College, CUNY.</p>
+      <p class="cv-link"><a class="btn" href="assets/Beatrice-Mundo-CV.pdf" rel="noopener">Download full CV</a><span>Complete academic CV (PDF), updated October 2026</span></p>
+    </div>
+    <div class="about-photo"><img src="assets/beatrice.jpg" alt="Portrait of Beatrice Mundo" width="1057" height="1128"></div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-name">Beatrice Mundo</div>
+    <div>
+      <h3>Affiliation</h3>
+      <p>CUNY Graduate Center, New York, NY</p>
+      <p>Baruch College, New York, NY</p>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <p><a href="mailto:beatrice.mundo11@cuny.edu">beatrice.mundo11@cuny.edu</a></p>
+      <p><a href="mailto:mundo.beatrice.bm@gmail.com">mundo.beatrice.bm@gmail.com</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.querySelector('.menu-btn'), n = document.getElementById('nav');
+  if (!b || !n) return;
+  b.addEventListener('click', function () {
+    var open = n.classList.toggle('open');
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    b.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+</body>
+</html>

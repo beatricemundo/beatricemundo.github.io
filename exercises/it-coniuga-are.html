@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coniuga!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F5EDE0; --paper:#FBF7EF; --ink:#2E2A24; --muted:#6F665A; --line:#D9CDB8;
+  --terra:#B5573A; --terra-ink:#FFF6EE; --olive:#5F6A38; --olive-ink:#F7F6EA;
+  --ok:#4C6B2F; --ok-bg:#E3EBCF; --bad:#A63A2B; --bad-bg:#F4D9D2;
+  --serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --sans:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#211C17; --paper:#2B251F; --ink:#F1E8D8; --muted:#B2A690; --line:#463D32;
+    --terra:#C86A4B; --terra-ink:#1F1712; --olive:#8E9A5B; --olive-ink:#1B1E0F;
+    --ok:#B9D48A; --ok-bg:#334022; --bad:#F0A192; --bad-bg:#4A2A24;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#211C17; --paper:#2B251F; --ink:#F1E8D8; --muted:#B2A690; --line:#463D32;
+  --terra:#C86A4B; --terra-ink:#1F1712; --olive:#8E9A5B; --olive-ink:#1B1E0F;
+  --ok:#B9D48A; --ok-bg:#334022; --bad:#F0A192; --bad-bg:#4A2A24;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+main{max-width:860px;margin:0 auto;padding:28px 20px 56px}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,6vw,3rem);margin:0 0 6px;line-height:1.1}
+.sub{color:var(--muted);margin:0 0 22px;max-width:60ch}
+
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;margin-bottom:22px}
+.seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden}
+.seg button{font:inherit;font-weight:500;background:transparent;color:var(--ink);border:0;padding:8px 16px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.score{display:flex;gap:18px;font-variant-numeric:tabular-nums}
+.score b{font-family:var(--serif);font-size:1.5rem;margin-right:4px}
+.score span{color:var(--muted);font-size:.9rem}
+
+.table{display:grid;grid-template-columns:1fr 1fr;gap:18px;perspective:1000px}
+@media (max-width:560px){.table{gap:10px}}
+.card{border-radius:18px;padding:22px 18px;min-height:210px;display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:0 1px 0 rgba(0,0,0,.08),0 10px 24px -14px rgba(0,0,0,.45)}
+.card small{font-size:.85rem;opacity:.85}
+.card .big{font-family:var(--serif);font-weight:700;line-height:1.05;word-break:break-word}
+.pron{background:var(--olive);color:var(--olive-ink);transform:rotate(-1.2deg)}
+.pron .big{font-size:clamp(2rem,7.5vw,3.4rem)}
+.verb{background:var(--terra);color:var(--terra-ink);transform:rotate(1.2deg)}
+.verb .big{font-size:clamp(1.7rem,6.4vw,2.9rem)}
+.card.deal{animation:deal .45s ease-out}
+@keyframes deal{from{transform:rotateY(90deg) scale(.95);opacity:.2}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.card.deal{animation:none}}
+
+.answer{margin-top:26px;background:var(--paper);border:1.5px solid var(--line);border-radius:16px;padding:20px}
+label{display:block;font-weight:500;margin-bottom:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+input[type=text]{font:inherit;font-size:1.25rem;flex:1 1 220px;min-width:0;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+input[type=text]:focus-visible,button:focus-visible{outline:3px solid var(--terra);outline-offset:2px}
+input.ok{border-color:var(--ok);background:var(--ok-bg)}
+input.bad{border-color:var(--bad);background:var(--bad-bg)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 20px;cursor:pointer;background:var(--terra);color:var(--terra-ink)}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.msg{min-height:1.6em;margin:12px 0 0;font-weight:500}
+.msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+.hint{color:var(--muted);font-size:.9rem;margin-top:6px}
+
+.grid6{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center}
+.grid6 .p{font-family:var(--serif);font-weight:700;font-size:1.2rem;text-align:right}
+@media (max-width:560px){.grid6 .p{font-size:1rem}}
+
+.review{margin-top:28px}
+.review h2{font-family:var(--serif);font-size:1.3rem;margin:0 0 8px}
+.review ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.review li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.review li b{font-family:var(--serif)}
+.rules{margin-top:28px;border-top:1.5px solid var(--line);padding-top:14px;color:var(--muted);font-size:.95rem}
+.rules summary{cursor:pointer;color:var(--ink);font-weight:500}
+.rules p{margin:8px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>Coniuga!</h1>
+  <p class="sub">Coniuga (conjugate) <i>il presente dei verbi in <i>-are</i>, poi scrivi (write) la forma giusta.</p>
+
+  <div class="bar">
+    <div class="seg" role="group" aria-label="Modalità">
+      <button id="m1" aria-pressed="true">Una forma</button>
+      <button id="m2" aria-pressed="false">Tutto il verbo</button>
+    </div>
+    <div class="score" aria-live="polite">
+      <div><b id="sOk">0</b><span>giuste su</span> <b id="sTot">0</b></div>
+      <div><b id="sStreak">0</b><span>di fila</span></div>
+    </div>
+  </div>
+
+  <section class="table" aria-label="Le carte">
+    <div class="card pron" id="cardP">
+      <small id="pLabel">pronome</small>
+      <div class="big" id="pBig">io</div>
+      <small id="pNote">&nbsp;</small>
+    </div>
+    <div class="card verb" id="cardV">
+      <small>verbo</small>
+      <div class="big" id="vBig">abitare</div>
+      <small id="vNote">&nbsp;</small>
+    </div>
+  </section>
+
+  <!-- Modalità 1 -->
+  <section class="answer" id="single">
+    <label for="ans" id="ansLabel">Scrivi la forma:</label>
+    <div class="row">
+      <input type="text" id="ans" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <button class="btn" id="check">Controlla</button>
+      <button class="btn alt" id="reveal">Mostra</button>
+      <button class="btn alt" id="next">Nuova coppia</button>
+    </div>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+
+  <!-- Modalità 2 -->
+  <section class="answer" id="full" hidden>
+    <div class="grid6" id="grid6"></div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn" id="checkAll">Controlla tutto</button>
+      <button class="btn alt" id="revealAll">Mostra</button>
+      <button class="btn alt" id="nextAll">Nuovo verbo</button>
+    </div>
+    <p class="msg" id="msgAll" role="status"></p>
+  </section>
+
+  <section class="review" id="review" hidden>
+    <h2>Da ripassare</h2>
+    <ul id="reviewList"></ul>
+  </section>
+
+  <details class="rules">
+    <summary>Attenzione all'ortografia</summary>
+    <p><b>-care, -gare:</b> davanti a <i>i</i> serve la <i>h</i> per mantenere il suono duro. <i>cerco, cerchi, cerchiamo; pago, paghi, paghiamo</i>.</p>
+    <p><b>-iare</b> (<i>cominciare, mangiare, cambiare, viaggiare, studiare</i>): la <i>i</i> del tema non si raddoppia. <i>tu mangi, noi mangiamo</i>.</p>
+    <p><b>lui, lei, Lei:</b> la forma è la stessa. <b>loro</b> = terza persona plurale.</p>
+  </details>
+</main>
+
+<script>
+(function(){
+  // [etichetta mostrata, infiniti accettati]
+  var RAW = [
+    ["abitare",["abitare"]],["arrivare",["arrivare"]],["aspettare",["aspettare"]],
+    ["cambiare",["cambiare"]],["cenare",["cenare"]],["cercare",["cercare"]],
+    ["chiamare",["chiamare"]],["cominciare (a)",["cominciare"]],["comprare",["comprare"]],
+    ["desiderare",["desiderare"]],["dimenticare",["dimenticare"]],["disegnare",["disegnare"]],
+    ["diventare",["diventare"]],["frequentare",["frequentare"]],["guidare",["guidare"]],
+    ["imparare (a)",["imparare"]],["incontrare",["incontrare"]],["insegnare",["insegnare"]],
+    ["lavorare",["lavorare"]],["mandare",["mandare"]],["mangiare",["mangiare"]],
+    ["pagare",["pagare"]],["pensare (a/di)",["pensare"]],["portare",["portare"]],
+    ["praticare",["praticare"]],["ricordare",["ricordare"]],
+    ["(ri)tornare",["tornare","ritornare"]],["spiegare",["spiegare"]],["studiare",["studiare"]],
+    ["telefonare (a)",["telefonare"]],["trovare",["trovare"]],["usare",["usare"]],
+    ["viaggiare",["viaggiare"]]
+  ];
+  var PRON = [
+    {t:"io",k:"io",n:""},{t:"tu",k:"tu",n:"informale"},
+    {t:"lui",k:"lui",n:"lui / lei / Lei"},{t:"lei",k:"lui",n:"lui / lei / Lei"},
+    {t:"Lei",k:"lui",n:"formale"},
+    {t:"noi",k:"noi",n:""},{t:"voi",k:"voi",n:""},{t:"loro",k:"loro",n:""}
+  ];
+  var KEYS = [["io","io"],["tu","tu"],["lui","lui / lei / Lei"],["noi","noi"],["voi","voi"],["loro","loro"]];
+
+  function conj(inf){
+    var stem = inf.slice(0,-3), last = stem.slice(-1), h = (last==="c"||last==="g") ? "h" : "";
+    var iStem = last==="i";
+    return {
+      io: stem+"o",
+      tu: iStem ? stem : stem+h+"i",
+      lui: stem+"a",
+      noi: iStem ? stem+"amo" : stem+h+"iamo",
+      voi: stem+"ate",
+      loro: stem+"ano"
+    };
+  }
+  function answers(verb,key){ return verb[1].map(function(i){return conj(i)[key];}); }
+  function norm(s){ return s.toLowerCase().replace(/[’‘`]/g,"'").replace(/\s+/g," ").trim(); }
+  function stripPron(s,p){
+    var parts = s.split(" ");
+    if(parts.length>1 && ["io","tu","lui","lei","noi","voi","loro"].indexOf(parts[0])>-1) parts.shift();
+    return parts.join(" ");
+  }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  var $ = function(id){return document.getElementById(id);};
+
+  var mode=1, cur={p:PRON[0],v:RAW[0]}, done=false, tot=0, ok=0, streak=0, missed=[];
+
+  function deal(){
+    var np,nv;
+    do { np=pick(PRON); nv=pick(RAW); } while(mode===1 && np===cur.p && nv===cur.v);
+    if(mode===2){ np={t:"—",k:"",n:""}; }
+    cur={p:np,v:nv}; done=false;
+    var vB=$("vBig"); vB.textContent=nv[0].replace(/\s*\(.*\)$/,"");
+    if(nv[0].charAt(0)==="(") vB.textContent=nv[0];
+    var m=nv[0].match(/\s(\(.*\))$/); $("vNote").innerHTML = m ? "con "+m[1].replace(/[()]/g,"") : "&nbsp;";
+    if(mode===1){
+      $("pLabel").textContent="pronome"; $("pBig").textContent=np.t; $("pNote").innerHTML=np.n||"&nbsp;";
+      $("ansLabel").textContent="Scrivi la forma per «"+np.t+"»:";
+      var a=$("ans"); a.value=""; a.className=""; a.disabled=false; a.focus();
+      msg("","");
+    } else {
+      $("pLabel").textContent="pronomi"; $("pBig").textContent="io … loro"; $("pNote").innerHTML="tutte le persone";
+      buildGrid(); msgAll("","");
+    }
+    [$("cardP"),$("cardV")].forEach(function(c){c.classList.remove("deal");void c.offsetWidth;c.classList.add("deal");});
+  }
+  function msg(t,c){var m=$("msg");m.textContent=t;m.className="msg "+c;}
+  function msgAll(t,c){var m=$("msgAll");m.textContent=t;m.className="msg "+c;}
+  function updateScore(){$("sOk").textContent=ok;$("sTot").textContent=tot;$("sStreak").textContent=streak;}
+  function addMissed(pl,v,ans){
+    var key=pl+"|"+v[0];
+    if(missed.some(function(x){return x.key===key;})) return;
+    missed.push({key:key,pl:pl,v:v[0],a:ans});
+    var ul=$("reviewList"); ul.innerHTML="";
+    missed.forEach(function(x){var li=document.createElement("li");li.innerHTML="<b>"+x.pl+"</b> · "+x.v.replace(/</g,"&lt;")+" → <b>"+x.a+"</b>";ul.appendChild(li);});
+    $("review").hidden=false;
+  }
+
+  function check(){
+    if(done) { deal(); return; }
+    var a=$("ans"), val=stripPron(norm(a.value),cur.p.t);
+    if(!val){ msg("Scrivi una risposta prima.","bad"); return; }
+    var good=answers(cur.v,cur.p.k);
+    tot++;
+    if(good.indexOf(val)>-1){
+      ok++; streak++; a.className="ok"; msg("Giusto! "+cur.p.t+" "+good[0]+(good.length>1?" (anche "+good[1]+")":""),"ok"); done=true;
+    } else {
+      streak=0; a.className="bad";
+      msg("Non ancora. Riprova, oppure premi «Mostra».","bad");
+      addMissed(cur.p.t,cur.v,good[0]);
+    }
+    updateScore();
+  }
+  function reveal(){
+    var good=answers(cur.v,cur.p.k);
+    $("ans").value=good[0]; $("ans").className="bad"; msg(cur.p.t+" → "+good.join(" / "),"bad");
+    if(!done){ tot++; streak=0; addMissed(cur.p.t,cur.v,good[0]); updateScore(); }
+    done=true;
+  }
+
+  function buildGrid(){
+    var g=$("grid6"); g.innerHTML="";
+    KEYS.forEach(function(k){
+      var p=document.createElement("div");p.className="p";p.textContent=k[1];
+      var i=document.createElement("input");i.type="text";i.id="f_"+k[0];i.autocomplete="off";i.setAttribute("autocapitalize","none");i.spellcheck=false;
+      i.setAttribute("aria-label",k[1]);
+      i.addEventListener("keydown",function(e){if(e.key==="Enter")checkAll();});
+      g.appendChild(p);g.appendChild(i);
+    });
+    var f=$("f_io"); if(f) f.focus();
+  }
+  function checkAll(){
+    var right=0;
+    KEYS.forEach(function(k){
+      var i=$("f_"+k[0]), val=stripPron(norm(i.value),k[0]);
+      var good=answers(cur.v,k[0]);
+      if(good.indexOf(val)>-1){ i.className="ok"; right++; }
+      else { i.className="bad"; if(val) addMissed(k[1],cur.v,good[0]); }
+    });
+    tot+=6; ok+=right; streak = right===6 ? streak+1 : 0; updateScore();
+    msgAll(right===6?"Perfetto! Sei a sei su sei.":right+" su 6. Correggi le caselle rosse.", right===6?"ok":"bad");
+  }
+  function revealAll(){
+    KEYS.forEach(function(k){var i=$("f_"+k[0]);i.value=answers(cur.v,k[0])[0];i.className="bad";});
+    msgAll("Ecco tutte le forme.","bad");
+  }
+
+  function setMode(m){
+    mode=m; $("m1").setAttribute("aria-pressed",m===1); $("m2").setAttribute("aria-pressed",m===2);
+    $("single").hidden = m!==1; $("full").hidden = m!==2; deal();
+  }
+  $("m1").onclick=function(){setMode(1);}; $("m2").onclick=function(){setMode(2);};
+  $("check").onclick=check; $("reveal").onclick=reveal; $("next").onclick=deal;
+  $("checkAll").onclick=checkAll; $("revealAll").onclick=revealAll; $("nextAll").onclick=deal;
+  $("ans").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();check();}});
+  deal();
+})();
+</script>
+</body>
+</html>

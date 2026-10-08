@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>À la gare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F1ECE2; --paper:#FBF8F2; --ink:#1E2433; --muted:#626575;
+  --terra:#7E2437; --terra-soft:#F0D8DC; --olive:#23345A; --olive-soft:#DDE2EE;
+  --board:#15213B; --tile:#22304F; --tile-ink:#F4EBD6; --tile-line:#0E1629;
+  --ok:#2F5E3A; --no:#7E2437;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#161922; --paper:#1F2330; --ink:#ECE6DA; --muted:#A3A6B4;
+    --terra:#D77A8C; --terra-soft:#43222B; --olive:#9FB2DA; --olive-soft:#28304A;
+    --board:#0D1426; --tile:#1D2944; --ok:#8FC49B; --no:#E08A9A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161922; --paper:#1F2330; --ink:#ECE6DA; --muted:#A3A6B4;
+  --terra:#D77A8C; --terra-soft:#43222B; --olive:#9FB2DA; --olive-soft:#28304A;
+  --board:#0D1426; --tile:#1D2944; --ok:#8FC49B; --no:#E08A9A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
+h1{font-family:"Playfair Display",Georgia,serif;font-weight:800;font-size:clamp(2.2rem,5vw,3.4rem);line-height:1;margin:0;letter-spacing:-.01em}
+.sub{margin:8px 0 0;color:var(--muted);max-width:52ch}
+.modes{display:inline-flex;background:var(--paper);border:1.5px solid var(--olive);border-radius:999px;padding:3px}
+.modes button{border:0;background:none;font:inherit;font-weight:500;padding:8px 18px;border-radius:999px;color:var(--olive);cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--olive);color:var(--paper)}
+button:focus-visible{outline:3px solid var(--terra);outline-offset:2px}
+
+/* Tabellone */
+.board{background:var(--board);border-radius:10px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:18px;box-shadow:inset 0 0 0 1px #000}
+.panel h2{font-family:"Playfair Display",Georgia,serif;font-style:italic;font-weight:600;color:var(--tile-ink);font-size:1.35rem;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.panel h2 small{font-family:"DM Sans",sans-serif;font-style:normal;font-size:.8rem;color:#8F9AB5;font-weight:400}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;width:100%;background:none;border:0;border-top:1px solid #2A3858;padding:7px 6px;color:var(--tile-ink);font:inherit;text-align:left;cursor:pointer;border-radius:4px}
+.row:first-of-type{border-top:0}
+.row:hover:not(:disabled){background:#1F2C4A}
+.row:disabled{cursor:default}
+.row.sel{background:var(--terra);color:#FFF7EE}
+.row.sel .t{background:#541624;color:#FFF7EE}
+.city{font-weight:500;font-size:1.02rem;text-transform:uppercase;letter-spacing:.04em}
+.time{display:flex;gap:3px}
+.t{display:inline-block;width:1.35em;text-align:center;background:var(--tile);color:var(--tile-ink);font-weight:700;font-size:1.15rem;font-variant-numeric:tabular-nums;padding:3px 0;border-radius:3px;position:relative;background-image:linear-gradient(to bottom,transparent calc(50% - .5px),var(--tile-line) calc(50% - .5px),var(--tile-line) calc(50% + .5px),transparent calc(50% + .5px))}
+.t.colon{width:.75em;background:none;font-weight:500}
+.boardbar{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 26px}
+.ghost{font:inherit;font-size:.92rem;background:none;border:1.5px solid var(--muted);color:var(--ink);padding:6px 14px;border-radius:6px;cursor:pointer}
+.ghost:hover{border-color:var(--ink)}
+
+/* Card */
+.card{background:var(--paper);border-radius:10px;padding:26px 26px 22px;border-left:6px solid var(--terra)}
+.who{margin:0 0 4px;color:var(--terra);font-weight:700}
+.q{font-family:"Playfair Display",Georgia,serif;font-size:clamp(1.4rem,3.4vw,2rem);line-height:1.25;margin:0 0 18px}
+.q.hint{font-family:"DM Sans",sans-serif;font-size:1.05rem;color:var(--muted)}
+.ans{font-family:"Playfair Display",Georgia,serif;font-style:italic;font-size:clamp(1.3rem,3vw,1.8rem);color:var(--olive);margin:0 0 6px}
+.ans-note{margin:0 0 16px;color:var(--muted);font-size:.95rem}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:6px;padding:11px 20px;cursor:pointer;background:var(--terra);color:#FFF7EE}
+.btn.alt{background:var(--olive-soft);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.92rem;margin-bottom:10px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.opt{font:inherit;text-align:left;background:var(--bg);color:var(--ink);border:1.5px solid transparent;border-radius:8px;padding:12px 14px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--olive)}
+.opt.right{border-color:var(--ok);background:var(--olive-soft)}
+.opt.wrong{border-color:var(--no);background:var(--terra-soft)}
+.opt:disabled{cursor:default}
+.fb{min-height:1.5em;margin:0 0 14px}
+.fb b{color:var(--ok)} .fb b.no{color:var(--no)}
+.final{font-family:"Playfair Display",Georgia,serif;font-size:3rem;margin:0;color:var(--olive)}
+[hidden]{display:none!important}
+@media (max-width:760px){
+  .board{grid-template-columns:1fr}
+  .opts{grid-template-columns:1fr}
+  .card{padding:20px 18px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>À la gare</h1>
+      <p class="sub">À quelle heure part le train&nbsp;? À quelle heure arrive-t-il&nbsp;? Répondez (answer) avec l'heure officielle (24-hour clock).</p>
+    </div>
+    <div class="modes" role="group" aria-label="Mode">
+      <button id="m-pair" aria-pressed="true">À deux</button>
+      <button id="m-quiz" aria-pressed="false">Quiz</button>
+    </div>
+  </header>
+
+  <section class="board" aria-label="Tableau des horaires">
+    <div class="panel"><h2>Arrivées <small>de</small></h2><div id="arr"></div></div>
+    <div class="panel"><h2>Départs <small>pour</small></h2><div id="dep"></div></div>
+  </section>
+  <div class="boardbar">
+    <button class="ghost" id="shuffle">Nouveaux horaires</button>
+    <button class="ghost" id="reset">Horaires d'origine</button>
+  </div>
+
+  <!-- À deux -->
+  <section class="card" id="pair">
+    <p class="who" id="p-who">Étudiant·e A demande (asks)</p>
+    <p class="q hint" id="p-q">Touchez (click) un train sur le tableau (board), ou appuyez sur (click) «&nbsp;Nouvelle question&nbsp;».</p>
+    <p class="ans" id="p-ans" hidden></p>
+    <p class="ans-note" id="p-note" hidden></p>
+    <div class="actions">
+      <button class="btn" id="p-reveal" disabled>Voir la réponse</button>
+      <button class="btn alt" id="p-listen" disabled>Écouter</button>
+      <button class="btn alt" id="p-next">Nouvelle question</button>
+    </div>
+  </section>
+
+  <!-- Quiz -->
+  <section class="card" id="quiz" hidden>
+    <div id="qz-play">
+      <div class="meta"><span id="qz-count"></span><span id="qz-score"></span></div>
+      <p class="q" id="qz-q"></p>
+      <div class="opts" id="qz-opts"></div>
+      <p class="fb" id="qz-fb" aria-live="polite"></p>
+      <div class="actions">
+        <button class="btn" id="qz-next" disabled>Suivant</button>
+        <button class="btn alt" id="qz-listen" disabled>Écouter</button>
+      </div>
+    </div>
+    <div id="qz-end" hidden>
+      <p class="who">Résultat</p>
+      <p class="final" id="qz-final"></p>
+      <p id="qz-msg"></p>
+      <div class="actions"><button class="btn" id="qz-again">Recommencer</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+const BASE = {
+  arr:[["Lyon",10,3],["Bordeaux",11,30],["Lille",12,15],["Strasbourg",16,37],["Nantes",18,22],["Marseille",21,45],["Nice",23,10]],
+  dep:[["Rennes",6,30],["Tours",8,45],["Dijon",13,0],["Toulouse",17,46],["Montpellier",19,58],["Avignon",22,50],["Brest",23,58]]
+};
+const clone = o => JSON.parse(JSON.stringify(o));
+let data = clone(BASE);
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const NB = "\u00a0";
+const HINT = "Touchez (click) un train sur le tableau (board), ou appuyez sur (click) «"+NB+"Nouvelle question"+NB+"».";
+
+/* ---------- nombres et heures ---------- */
+const U=["zéro","un","deux","trois","quatre","cinq","six","sept","huit","neuf","dix","onze","douze","treize","quatorze","quinze","seize","dix-sept","dix-huit","dix-neuf"];
+const T={2:"vingt",3:"trente",4:"quarante",5:"cinquante"};
+function num(n,fem){
+  if(n===1) return fem?"une":"un";
+  if(n<20) return U[n];
+  const base=T[Math.floor(n/10)], u=n%10;
+  if(u===0) return base;
+  if(u===1) return base+" et "+(fem?"une":"un");
+  return base+"-"+U[u];
+}
+const hrs = h => h===1 ? "une heure" : num(h,true)+" heures";
+function words(h,m){ return "à "+hrs(h)+(m>0?" "+num(m,true):""); }
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const pad = n => String(n).padStart(2,"0");
+function question(kind,city){
+  return kind==="arr" ? `À quelle heure arrive le train de ${city}${NB}?` : `À quelle heure part le train pour ${city}${NB}?`;
+}
+function full(kind,h,m){ return (kind==="arr"?"Il arrive ":"Il part ")+words(h,m)+"."; }
+function h12(h){ if(h===12) return "midi"; if(h===24||h===0) return "minuit"; return hrs(h>12?h-12:h); }
+function note(h,m){
+  if(m===0) return "On peut aussi dire «"+NB+hrs(h)+" pile"+NB+"» (on the dot).";
+  let alt=null;
+  if(m===30) alt=h12(h)+" et demie";
+  if(m===15) alt=h12(h)+" et quart";
+  if(m===45) alt=h12(h+1)+" moins le quart";
+  return alt ? "Dans la conversation (12-hour clock), on entend aussi «"+NB+alt+NB+"»." : "";
+}
+
+/* ---------- tableau ---------- */
+function timeHTML(h,m){
+  const s=pad(h)+"h"+pad(m);
+  return [...s].map(c=>c==="h"?'<span class="t colon">h</span>':`<span class="t" data-c="${c}">${c}</span>`).join("");
+}
+function renderBoard(animate){
+  ["arr","dep"].forEach(k=>{
+    const el=document.getElementById(k);
+    el.innerHTML=data[k].map((r,i)=>
+      `<button class="row" data-k="${k}" data-i="${i}" aria-label="${k==="arr"?"Arrivée de":"Départ pour"} ${r[0]}, ${pad(r[1])}h${pad(r[2])}">
+        <span class="city">${r[0]}</span><span class="time">${timeHTML(r[1],r[2])}</span></button>`).join("");
+  });
+  document.querySelectorAll(".row").forEach(b=>b.addEventListener("click",()=>{
+    if(mode!=="pair") return;
+    setPair(b.dataset.k,+b.dataset.i);
+  }));
+  syncRows();
+  if(animate && !reduce) flip();
+}
+function flip(){
+  document.querySelectorAll(".t[data-c]").forEach((t,idx)=>{
+    const final=t.dataset.c; let n=0; const stop=6+(idx%8)+Math.floor(Math.random()*6);
+    const iv=setInterval(()=>{
+      t.textContent = n>=stop ? final : String(Math.floor(Math.random()*10));
+      if(n++>=stop) clearInterval(iv);
+    },45);
+  });
+}
+function highlight(k,i){
+  document.querySelectorAll(".row").forEach(r=>r.classList.toggle("sel",r.dataset.k===k && +r.dataset.i===i));
+}
+function syncRows(){
+  document.querySelectorAll(".row").forEach(r=>{ r.disabled = (mode!=="pair"); });
+  if(mode==="pair" && cur) highlight(cur.k,cur.i);
+  if(mode==="quiz" && qz && qz.list[qz.n]) highlight(qz.list[qz.n].k,qz.list[qz.n].i);
+}
+function randomize(){
+  ["arr","dep"].forEach(k=>{
+    const times=data[k].map(()=>{
+      let m; do{ m=Math.floor(Math.random()*60);}while(m%10===1);
+      return [5+Math.floor(Math.random()*19),m];
+    }).sort((a,b)=>a[0]*60+a[1]-(b[0]*60+b[1]));
+    data[k]=data[k].map((r,i)=>[r[0],times[i][0],times[i][1]]);
+  });
+}
+
+/* ---------- voix ---------- */
+const canSpeak = "speechSynthesis" in window;
+function speak(text){
+  if(!canSpeak) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text); u.lang="fr-FR"; u.rate=.9;
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith("fr"));
+  if(v) u.voice=v;
+  speechSynthesis.speak(u);
+}
+
+/* ---------- mode à deux ---------- */
+let mode="pair", cur=null, role=0, recent=[];
+const $=id=>document.getElementById(id);
+function setPair(k,i){
+  const r=data[k][i];
+  cur={k,i,city:r[0],h:r[1],m:r[2]};
+  role = 1-role;
+  $("p-who").textContent = (role ? "Étudiant·e A" : "Étudiant·e B")+" demande (asks)";
+  $("p-q").textContent = question(k,r[0]);
+  $("p-q").classList.remove("hint");
+  $("p-ans").hidden=true; $("p-note").hidden=true;
+  $("p-reveal").disabled=false; $("p-listen").disabled=!canSpeak;
+  highlight(k,i);
+  recent.push(k+i); if(recent.length>6) recent.shift();
+}
+$("p-reveal").onclick=()=>{
+  if(!cur) return;
+  $("p-ans").textContent = cap(words(cur.h,cur.m))+".";
+  $("p-ans").hidden=false;
+  const n=[ "Phrase complète (full sentence)"+NB+": "+full(cur.k,cur.h,cur.m), note(cur.h,cur.m) ].filter(Boolean).join(" ");
+  $("p-note").textContent=n; $("p-note").hidden=false;
+  $("p-reveal").disabled=true;
+};
+$("p-listen").onclick=()=>{
+  if(!cur) return;
+  const q=question(cur.k,cur.city);
+  speak($("p-ans").hidden ? q : q+" "+full(cur.k,cur.h,cur.m));
+};
+$("p-next").onclick=()=>{
+  let k,i,tries=0;
+  do{ k=Math.random()<.5?"arr":"dep"; i=Math.floor(Math.random()*7); tries++; }while(recent.includes(k+i)&&tries<30);
+  setPair(k,i);
+};
+
+/* ---------- quiz ---------- */
+let qz=null;
+function distractors(h,m){
+  const out=[], seen=new Set([words(h,m)]);
+  const push=(w,why)=>{ if(seen.has(w)) return; seen.add(w); out.push({w,why}); };
+  const add=(hh,mm,why)=>{ if(hh<1||hh>23||mm<0||mm>59) return; push(words(hh,mm),why); };
+  if(h>12) add(h-12,m,"Dans la conversation, oui, mais ici on utilise l'heure officielle (24-hour clock).");
+  const tt={4:14,5:15,6:16,14:40,15:50,40:14,50:15,13:30,30:13,16:6};
+  if(tt[m]!==undefined) add(h,tt[m],"Attention"+NB+": "+num(m,true)+" et "+num(tt[m],true)+", ce n'est pas le même nombre (not the same number)"+NB+"!");
+  if(m>0) push("à "+num(h,true)+" "+num(m,true),"N'oubliez pas le mot «"+NB+"heures"+NB+"» (don't forget the word)"+NB+"!");
+  if(m>=5&&m<=23&&m!==h) add(m,h,"L'heure d'abord, puis les minutes (hour first, then minutes).");
+  let guard=0;
+  while(out.length<3 && guard++<50){
+    const r=Math.random();
+    if(r<.4) add(h,(m+[2,5,10,20][Math.floor(Math.random()*4)])%60,"Regardez bien les minutes sur le tableau.");
+    else if(r<.7) add(h+([1,-1][Math.floor(Math.random()*2)]),m,"Regardez bien l'heure sur le tableau.");
+    else add(5+Math.floor(Math.random()*19),Math.floor(Math.random()*60),"Regardez bien l'horaire sur le tableau.");
+  }
+  return out.sort(()=>Math.random()-.5).slice(0,3);
+}
+function startQuiz(){
+  const all=[];
+  ["arr","dep"].forEach(k=>data[k].forEach((r,i)=>all.push({k,i})));
+  for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]];}
+  qz={list:all.slice(0,10),n:0,score:0};
+  $("qz-play").hidden=false; $("qz-end").hidden=true;
+  showQ();
+}
+function showQ(){
+  const it=qz.list[qz.n], r=data[it.k][it.i];
+  it.city=r[0]; it.h=r[1]; it.m=r[2];
+  highlight(it.k,it.i);
+  $("qz-count").textContent=`Question ${qz.n+1} sur ${qz.list.length}`;
+  $("qz-score").textContent=`Bonnes réponses${NB}: ${qz.score}`;
+  $("qz-q").textContent=question(it.k,it.city);
+  $("qz-fb").innerHTML=""; $("qz-next").disabled=true; $("qz-listen").disabled=true;
+  const right={w:words(it.h,it.m),ok:true};
+  const opts=[right,...distractors(it.h,it.m)].sort(()=>Math.random()-.5);
+  const box=$("qz-opts"); box.innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement("button"); b.className="opt"; b.textContent=cap(o.w)+".";
+    b.onclick=()=>answer(b,o,right,it);
+    box.appendChild(b);
+  });
+}
+function answer(btn,o,right,it){
+  document.querySelectorAll(".opt").forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===cap(right.w)+".") b.classList.add("right");
+  });
+  const n=note(it.h,it.m);
+  const fb=$("qz-fb"); fb.textContent="";
+  const b=document.createElement("b");
+  if(o.ok){ qz.score++; b.textContent="Exact"+NB+"! "; fb.append(b, n); }
+  else { btn.classList.add("wrong"); b.className="no"; b.textContent="Non. "; fb.append(b, o.why); }
+  $("qz-score").textContent=`Bonnes réponses${NB}: ${qz.score}`;
+  $("qz-next").disabled=false; $("qz-listen").disabled=!canSpeak;
+  $("qz-next").textContent = qz.n===qz.list.length-1 ? "Voir le résultat" : "Suivant";
+  $("qz-next").focus();
+}
+$("qz-listen").onclick=()=>{ const it=qz.list[qz.n]; speak(question(it.k,it.city)+" "+full(it.k,it.h,it.m)); };
+$("qz-next").onclick=()=>{
+  qz.n++;
+  if(qz.n<qz.list.length){ showQ(); return; }
+  $("qz-play").hidden=true; $("qz-end").hidden=false;
+  $("qz-final").textContent=`${qz.score} / ${qz.list.length}`;
+  $("qz-msg").textContent = qz.score>=9 ? "Bravo"+NB+"! Votre train est à l'heure." : qz.score>=6 ? "Bien"+NB+"! Révisez les nombres et recommencez." : "Révisez les nombres de 1 à 59 et recommencez avec de nouveaux horaires.";
+  highlight(null,null);
+};
+$("qz-again").onclick=startQuiz;
+
+/* ---------- contrôles ---------- */
+function setMode(m){
+  mode=m;
+  $("m-pair").setAttribute("aria-pressed",m==="pair");
+  $("m-quiz").setAttribute("aria-pressed",m==="quiz");
+  $("pair").hidden = m!=="pair"; $("quiz").hidden = m!=="quiz";
+  highlight(null,null);
+  if(m==="quiz") startQuiz();
+  syncRows();
+}
+$("m-pair").onclick=()=>setMode("pair");
+$("m-quiz").onclick=()=>setMode("quiz");
+function afterDataChange(){
+  cur=null; recent=[];
+  $("p-q").textContent=HINT;
+  $("p-q").classList.add("hint"); $("p-ans").hidden=true; $("p-note").hidden=true;
+  $("p-reveal").disabled=true; $("p-listen").disabled=true;
+  renderBoard(true);
+  if(mode==="quiz") startQuiz();
+}
+$("shuffle").onclick=()=>{ randomize(); afterDataChange(); };
+$("reset").onclick=()=>{ data=clone(BASE); afterDataChange(); };
+if(canSpeak) speechSynthesis.getVoices();
+
+renderBoard(true);
+})();
+</script>
+
+</body>
+</html>

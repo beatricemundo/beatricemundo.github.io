@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teaching — Beatrice Mundo</title>
+<meta name="description" content="Courses taught by Beatrice Mundo at Baruch College, CUNY: French and Italian.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Marcellus&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">Beatrice Mundo</a>
+    <button class="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
+    <nav class="nav" id="nav" aria-label="Main"><a href="index.html">Home</a><a href="projects.html">Projects</a><a href="teaching.html" aria-current="page">Teaching</a><a href="about.html">About</a></nav>
+  </div>
+</header>
+<main id="main">
+<h1 class="page-title">Teaching</h1>
+<section class="teaching">
+  <div class="wrap">
+    <p class="intro">I teach French and Italian at Baruch College, CUNY. In my classes students practice in pairs and groups, working through interactive exercises that I design and build with Claude, Anthropic’s AI assistant, and checking their answers as they go.</p>
+    <p class="note">Exercises built with Claude Sonnet 5.5 (Anthropic).</p>
+    <ul class="terms">
+      <li><span class="term">Fall 2026</span><span class="courses">FRE 1001 · ITL 1001 <em>(in progress)</em></span></li>
+      <li><span class="term">Spring 2026</span><span class="courses">FRE 1001 · ITL 1002</span></li>
+      <li><span class="term">Fall 2025</span><span class="courses">FRE 1001</span></li>
+    </ul>
+    <div class="exercises">
+      <h2>Interactive exercises</h2>
+      <p>A first selection of the exercises I use in class. They run in the browser, with no sign-in, and are meant to be done in pairs or small groups.</p>
+      <h3>French · FRE 1001</h3>
+      <ul class="ex-list">
+        <li><a href="exercises/fr-quick-check-articles.html">Quick check : un, le ou de ?</a></li>
+        <li><a href="exercises/fr-jours-semaine.html">Les jours de la semaine (jeu en équipes)</a></li>
+        <li><a href="exercises/fr-etre-pronoms.html">Les pronoms sujets et le verbe être</a></li>
+        <li><a href="exercises/fr-accord-adjectifs.html">L’accord des adjectifs</a></li>
+        <li><a href="exercises/fr-liaison.html">Liaison ou pas de liaison ?</a></li>
+        <li><a href="exercises/fr-a-la-gare.html">À la gare : l’heure officielle</a></li>
+      </ul>
+      <h3>Italian · ITL 1001 &amp; 1002</h3>
+      <ul class="ex-list">
+        <li><a href="exercises/it-giorni-settimana.html">I giorni della settimana (gioco a squadre)</a></li>
+        <li><a href="exercises/it-coniuga-are.html">Coniuga! I verbi in -are</a></li>
+        <li><a href="exercises/it-articoli.html">A caccia di articoli</a></li>
+        <li><a href="exercises/it-alla-stazione.html">Alla stazione: l’orario a 24 ore</a></li>
+        <li><a href="exercises/it-cappuccetto-rosso.html">Cappuccetto Rosso: imperfetto e passato prossimo</a></li>
+      </ul>
+    </div>
+    <div class="open-course">
+      <h2>Elementary French, open to everyone</h2>
+      <p>An open French course I’m building for anyone who wants to learn the basics: no enrollment, no affiliation, no prior knowledge needed. It is at an early stage: for now it includes only the preliminary chapter, and more chapters, grammar explanations and practice activities will be added over time.</p>
+      <p class="teaching-links"><a class="btn" href="https://french1001.commons.gc.cuny.edu/" rel="noopener">Visit the site</a></p>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-name">Beatrice Mundo</div>
+    <div>
+      <h3>Affiliation</h3>
+      <p>CUNY Graduate Center, New York, NY</p>
+      <p>Baruch College, New York, NY</p>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <p><a href="mailto:beatrice.mundo11@cuny.edu">beatrice.mundo11@cuny.edu</a></p>
+      <p><a href="mailto:mundo.beatrice.bm@gmail.com">mundo.beatrice.bm@gmail.com</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.querySelector('.menu-btn'), n = document.getElementById('nav');
+  if (!b || !n) return;
+  b.addEventListener('click', function () {
+    var open = n.classList.toggle('open');
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    b.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+</body>
+</html>

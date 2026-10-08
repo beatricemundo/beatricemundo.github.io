@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projects — Beatrice Mundo</title>
+<meta name="description" content="Digital humanities projects on Catherine de’ Medici’s correspondence by Beatrice Mundo.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Marcellus&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="page-white">
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">Beatrice Mundo</a>
+    <button class="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
+    <nav class="nav" id="nav" aria-label="Main"><a href="index.html">Home</a><a href="projects.html" aria-current="page">Projects</a><a href="teaching.html">Teaching</a><a href="about.html">About</a></nav>
+  </div>
+</header>
+<main id="main">
+<h1 class="page-title">Digital Projects</h1>
+
+<section class="project img-left">
+  <div class="wrap">
+    <figure>
+      <a href="https://beatricemundo.github.io/lettrescatherinemedicis/" rel="noopener"><img src="assets/portrait-catherine.jpg" alt="Portrait of Catherine de’ Medici and her children" width="622" height="903"></a>
+      <figcaption><em>Portrait of Catherine de’ Medici and her children</em> (1561), attributed to the workshop of François Clouet. Oil on canvas, 198.1 × 137.2 cm. Collection of Strawberry Hill House, Twickenham, London, UK.</figcaption>
+    </figure>
+    <div class="card">
+      <h2>Digital Accessibility of Catherine de’ Medici’s Correspondence</h2>
+      <p>An open-access digital archive designed to make Catherine de’ Medici’s correspondence (1564–1566) searchable and accessible. Built using HTML and JavaScript, the interface offers filters by recipient, gender, date, and metadata. The project integrates sources from Gallica and Wikidata, and is featured in the <a href="https://newmedialab.cuny.edu/project/digital-accessibility-of-catherine-de-medicis-correspondence/" rel="noopener">GC Digital Scholarship Showcase 2025</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="project img-right">
+  <div class="wrap">
+    <div class="card">
+      <h2>Lettres de Catherine de Médicis (1564–1566)</h2>
+      <p>A prototype database developed as part of my Master’s dissertation in French Renaissance Literature and Digital Humanities at Université Gustave Eiffel, under the supervision of Caroline Trotot, and in connection with the DIGIS Graduate Program (<em>Digital Studies and Innovation for Smart-Cities</em>).</p>
+      <p>The site catalogs the letters written by Catherine de’ Medici during the Grand Tour of France (1564–1566), based on volumes 2 and 10 of the printed edition <em>Lettres de Catherine de Médicis</em>, published by the Comité des travaux historiques et scientifiques. It features OCR-corrected texts, XML-TEI encoding, and a data model centered on epistolary metadata.</p>
+      <p>The platform highlights the connection between the Queen Mother’s geographic itinerary and her epistolary strategy, allowing users to explore the letters through metadata and filters. It was developed in collaboration with the research project <em>Cités des Dames, créatrices dans la cité</em> and complements an interactive map created with <em>Cour de France.fr</em>.</p>
+    </div>
+    <figure>
+      <a href="https://beatricemundo.github.io/lettresmedicis6466/" rel="noopener"><img src="assets/map-grand-tour.jpg" alt="Map of the royal Grand Tour of France, 1564–1566, with the king’s route in green (January 1564 to June 1565) and red (July 1565 to May 1566)" width="1506" height="1459"></a>
+      <figcaption>Adapted from a map made available on Wikimedia Commons by Yug, Walké, and Flappiefh (CC BY-SA 3.0 license). Modified by Béatrice Mundo with assistance from Philippe Gambette. Last updated: September 29, 2024.</figcaption>
+    </figure>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-name">Beatrice Mundo</div>
+    <div>
+      <h3>Affiliation</h3>
+      <p>CUNY Graduate Center, New York, NY</p>
+      <p>Baruch College, New York, NY</p>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <p><a href="mailto:beatrice.mundo11@cuny.edu">beatrice.mundo11@cuny.edu</a></p>
+      <p><a href="mailto:mundo.beatrice.bm@gmail.com">mundo.beatrice.bm@gmail.com</a></p>
+    </div>
+  </div>
+</footer>
+<script>
+(function () {
+  var b = document.querySelector('.menu-btn'), n = document.getElementById('nav');
+  if (!b || !n) return;
+  b.addEventListener('click', function () {
+    var open = n.classList.toggle('open');
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    b.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+</body>
+</html>

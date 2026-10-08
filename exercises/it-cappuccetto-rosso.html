@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cappuccetto Rosso — Esercizio Interattivo</title>
+<style>
+  :root {
+    --verde:     #2d6a2d;
+    --rosso:     #9b1c1c;
+    --crema:     #fdf6e3;
+    --sfondo:    #f0ede4;
+    --testo:     #1c1208;
+    --imp:       #b45309;
+    --pp:        #1d4ed8;
+    --trap:      #6d28d9;
+    --corretto:  #166534;
+    --sbagliato: #dc2626;
+    --verde-ok:  #16a34a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--sfondo);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--testo);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(160deg, #0a1f0a 0%, #1a3d0f 55%, #3b6b1a 100%);
+    padding: 40px 20px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 120%, rgba(155,28,28,0.2) 0%, transparent 70%);
+  }
+  .hero svg { display: block; margin: 0 auto 20px; position: relative; }
+  .hero h1 {
+    font-size: clamp(22px, 5vw, 36px);
+    color: #e8c87a;
+    letter-spacing: 0.05em;
+    text-shadow: 0 2px 12px rgba(232,200,122,0.4);
+    position: relative;
+  }
+  .hero p {
+    color: #c8ddb0;
+    font-style: italic;
+    font-size: 15px;
+    margin-top: 8px;
+    position: relative;
+  }
+
+  /* LEGENDA */
+  .legenda {
+    display: flex; gap: 10px; justify-content: center;
+    flex-wrap: wrap; margin: 22px 16px 0;
+  }
+  .badge {
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 13px; font-weight: bold;
+  }
+  .badge-imp  { background:#fef3c7; border:2px solid var(--imp);  color:var(--imp); }
+  .badge-pp   { background:#eff6ff; border:2px solid var(--pp);   color:var(--pp); }
+  .badge-trap { background:#f5f3ff; border:2px solid var(--trap); color:var(--trap); }
+
+  /* CONTAINER */
+  .container {
+    max-width: 760px; margin: 28px auto 0;
+    padding: 0 16px;
+  }
+
+  .istruzioni {
+    background: rgba(255,255,255,0.75);
+    border: 1.5px solid #a0c070;
+    border-radius: 14px;
+    padding: 16px 22px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+    color: #2a3d1a;
+  }
+  .istruzioni strong { color: var(--rosso); }
+
+  /* WORD BANK */
+  .word-bank {
+    background: #f5faea;
+    border: 1.5px dashed #6b9b3a;
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 26px;
+  }
+  .word-bank-title {
+    font-size: 13px; font-weight: bold;
+    color: #3d6010; margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: var(--crema);
+    border: 1.5px solid #8aab50;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 13.5px;
+    color: var(--testo);
+    font-style: italic;
+    transition: all 0.2s;
+  }
+  .chip.used {
+    background: #e5e7eb;
+    border-color: #aaa;
+    color: #999;
+    text-decoration: line-through;
+  }
+
+  /* CAPITOLI */
+  .chapter {
+    background: rgba(255,255,255,0.82);
+    border: 1.5px solid #b8d490;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    line-height: 2;
+    font-size: 15.5px;
+  }
+  .chapter-label {
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--verde);
+    margin-bottom: 10px;
+  }
+
+  /* BLANK */
+  .blank-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    vertical-align: middle;
+  }
+  .blank-num {
+    font-size: 11px;
+    font-weight: bold;
+    background: #fef9c3;
+    border: 1px dashed #d97706;
+    border-radius: 6px;
+    padding: 1px 7px;
+    color: #78350f;
+    white-space: nowrap;
+  }
+  select.sel-tempo {
+    font-family: Georgia, serif;
+    font-size: 13px;
+    border: 2px solid #a0b880;
+    border-radius: 20px;
+    padding: 3px 10px;
+    background: var(--crema);
+    color: var(--testo);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  select.sel-tempo:focus { border-color: var(--verde); }
+
+  input.inp-conj {
+    font-family: Georgia, serif;
+    font-size: 13.5px;
+    border: 2px solid #a0b880;
+    border-radius: 20px;
+    padding: 4px 12px;
+    width: 200px;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input.inp-conj:focus { border-color: var(--verde); }
+  input.inp-conj::placeholder { color: #bbb; font-style: italic; }
+
+  select.corretto, input.corretto { border-color: var(--verde-ok) !important; background: #f0fdf4 !important; }
+  select.sbagliato, input.sbagliato { border-color: var(--sbagliato) !important; background: #fff1f1 !important; }
+
+  /* FEEDBACK */
+  .result-row { margin-top: 6px; font-size: 13.5px; line-height: 1.6; }
+  .feedback-panel {
+    display: none;
+    background: #fffbf0;
+    border: 1.5px solid #a0c070;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .feedback-panel.show { display: block; }
+
+  /* BOTTONE */
+  .btn-verifica {
+    display: block; margin: 28px auto 0;
+    background: var(--rosso);
+    color: #fff; border: none;
+    border-radius: 30px;
+    padding: 13px 40px;
+    font-size: 16px;
+    font-family: Georgia, serif;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(155,28,28,0.3);
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .btn-verifica:hover { background: #7b0f0f; transform: translateY(-1px); }
+  .btn-verifica:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; transform: none; }
+
+  .score-box {
+    text-align: center; border-radius: 16px;
+    padding: 20px 32px; margin-top: 14px;
+  }
+  .score-box .emoji { font-size: 40px; }
+  .score-box .score { font-size: 24px; font-weight: bold; margin: 8px 0 4px; }
+  .score-box .msg   { font-size: 14px; color: #555; }
+
+  .score-perfect { background: #dcfce7; border: 2px solid #16a34a; }
+  .score-good    { background: #fef9c3; border: 2px solid #d97706; }
+  .score-low     { background: #fee2e2; border: 2px solid #dc2626; }
+
+  .btn-reset {
+    display: block; margin: 14px auto 0;
+    background: transparent;
+    border: 2px solid var(--testo);
+    color: var(--testo);
+    border-radius: 30px; padding: 10px 28px;
+    font-size: 14px; font-family: Georgia, serif;
+    cursor: pointer;
+  }
+
+  /* GRAMMAR BOX */
+  .grammar-box {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    background: rgba(255,255,255,0.7);
+    border: 1.5px solid #b8d490;
+    border-radius: 14px;
+    padding: 16px 22px;
+    margin-top: 30px;
+  }
+  .grammar-box > div { flex: 1; min-width: 180px; }
+  .grammar-box .g-title { font-weight: bold; font-size: 13.5px; margin-bottom: 4px; }
+  .grammar-box p { color: #555; font-size: 13px; line-height: 1.6; }
+  .g-imp  { color: var(--imp); }
+  .g-pp   { color: var(--pp); }
+  .g-trap { color: var(--trap); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <svg width="260" height="150" viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Alberi bosco -->
+    <polygon points="30,140 55,60 80,140" fill="#1a3d0f" opacity="0.9"/>
+    <polygon points="50,140 70,75 90,140" fill="#2d5a15" opacity="0.85"/>
+    <polygon points="170,140 195,55 220,140" fill="#1a3d0f" opacity="0.9"/>
+    <polygon points="185,140 208,70 230,140" fill="#2d5a15" opacity="0.85"/>
+    <polygon points="210,140 228,80 246,140" fill="#1a3d0f" opacity="0.7"/>
+    <!-- Luna -->
+    <circle cx="130" cy="38" r="22" fill="#f5e6a0" opacity="0.9"/>
+    <circle cx="140" cy="30" r="14" fill="#0a1f0a" opacity="0.75"/>
+    <!-- Stelle -->
+    <circle cx="95"  cy="20" r="1.5" fill="#f5e6a0" opacity="0.8"/>
+    <circle cx="160" cy="15" r="1.5" fill="#f5e6a0" opacity="0.8"/>
+    <circle cx="175" cy="35" r="1"   fill="#f5e6a0" opacity="0.6"/>
+    <circle cx="85"  cy="45" r="1"   fill="#f5e6a0" opacity="0.6"/>
+    <!-- Figura Cappuccetto (sentiero) -->
+    <!-- corpo -->
+    <rect x="118" y="100" width="14" height="28" rx="4" fill="#9b1c1c"/>
+    <!-- testa -->
+    <circle cx="125" cy="94" r="9" fill="#f5d5a0"/>
+    <!-- cappuccio rosso -->
+    <ellipse cx="125" cy="89" rx="11" ry="8" fill="#c0392b"/>
+    <polygon points="114,90 125,68 136,90" fill="#c0392b"/>
+    <!-- cestino -->
+    <rect x="133" y="112" width="10" height="8" rx="2" fill="#c89b3c" opacity="0.9"/>
+    <path d="M133 112 Q138 107 143 112" stroke="#c89b3c" stroke-width="1.5" fill="none"/>
+    <!-- gambe -->
+    <rect x="119" y="126" width="5" height="14" rx="2" fill="#4a2a0a"/>
+    <rect x="126" y="126" width="5" height="14" rx="2" fill="#4a2a0a"/>
+    <!-- Occhi lupo nel bosco (destra) -->
+    <circle cx="200" cy="105" r="3" fill="#f5e600" opacity="0.85"/>
+    <circle cx="212" cy="108" r="3" fill="#f5e600" opacity="0.85"/>
+    <circle cx="201" cy="105" r="1.5" fill="#1a0a00"/>
+    <circle cx="213" cy="108" r="1.5" fill="#1a0a00"/>
+  </svg>
+
+  <h1>🧺 Cappuccetto Rosso</h1>
+  <p>Esercizio — Imperfetto, Passato Prossimo e Trapassato Prossimo</p>
+</div>
+
+<div class="legenda">
+  <span class="badge badge-imp">🟡 Imperfetto</span>
+  <span class="badge badge-pp">🔵 Passato Prossimo</span>
+  <span class="badge badge-trap">🟣 Trapassato Prossimo</span>
+</div>
+
+<!-- CONTENUTO -->
+<div class="container">
+
+  <div class="istruzioni">
+    Per ogni spazio: <strong>(1)</strong> scegli il <strong>tempo verbale</strong> corretto, poi <strong>(2)</strong> scrivi il verbo <strong>coniugato</strong>. Usa la banca dei verbi come aiuto!
+  </div>
+
+  <!-- Word bank -->
+  <div class="word-bank">
+    <div class="word-bank-title">📚 Banca dei verbi</div>
+    <div class="chips" id="chips">
+      <span class="chip" id="chip-chiamarsi">chiamarsi</span>
+      <span class="chip" id="chip-preparare">preparare</span>
+      <span class="chip" id="chip-fare">fare</span>
+      <span class="chip" id="chip-camminare">camminare</span>
+      <span class="chip" id="chip-incontrare">incontrare</span>
+      <span class="chip" id="chip-arrivare">arrivare</span>
+      <span class="chip" id="chip-mangiare">mangiare</span>
+      <span class="chip" id="chip-mettersi">mettersi</span>
+      <span class="chip" id="chip-salvarsi">salvarsi</span>
+    </div>
+  </div>
+
+  <!-- Capitolo 1 -->
+  <div class="chapter" id="cap-1">
+    <span class="chapter-label">— C'era una volta —</span>
+    C'era una volta una bambina che
+    <span class="blank-wrap">
+      <span class="blank-num">[1 — chiamarsi]</span>
+      <select class="sel-tempo" id="sel-1" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-1" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    Cappuccetto Rosso. Viveva in un piccolo villaggio vicino al bosco ed era sempre allegra e gentile.
+  </div>
+
+  <!-- Capitolo 2 -->
+  <div class="chapter" id="cap-2">
+    <span class="chapter-label">— La missione —</span>
+    Un mattino, la madre
+    <span class="blank-wrap">
+      <span class="blank-num">[2 — preparare]</span>
+      <select class="sel-tempo" id="sel-2" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-2" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    un cestino con dei dolci che
+    <span class="blank-wrap">
+      <span class="blank-num">[3 — fare]</span>
+      <select class="sel-tempo" id="sel-3" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-3" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    la sera prima. — Porta questo alla nonna! — ha detto.
+  </div>
+
+  <!-- Capitolo 3 -->
+  <div class="chapter" id="cap-3">
+    <span class="chapter-label">— Il bosco —</span>
+    Cappuccetto
+    <span class="blank-wrap">
+      <span class="blank-num">[4 — camminare]</span>
+      <select class="sel-tempo" id="sel-4" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-4" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    felice nel bosco quando
+    <span class="blank-wrap">
+      <span class="blank-num">[5 — incontrare]</span>
+      <select class="sel-tempo" id="sel-5" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-5" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    il lupo. Il lupo sembrava gentile, ma era molto furbo (sly).
+  </div>
+
+  <!-- Capitolo 4 -->
+  <div class="chapter" id="cap-4">
+    <span class="chapter-label">— Il lupo furbo —</span>
+    Il lupo
+    <span class="blank-wrap">
+      <span class="blank-num">[6 — arrivare]</span>
+      <select class="sel-tempo" id="sel-6" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-6" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    a casa della nonna prima di Cappuccetto. Lì,
+    <span class="blank-wrap">
+      <span class="blank-num">[7 — mangiare]</span>
+      <select class="sel-tempo" id="sel-7" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-7" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    la nonna e
+    <span class="blank-wrap">
+      <span class="blank-num">[8 — mettersi]</span>
+      <select class="sel-tempo" id="sel-8" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-8" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    nel letto al suo posto.
+  </div>
+
+  <!-- Capitolo 5 -->
+  <div class="chapter" id="cap-5">
+    <span class="chapter-label">— Il lieto fine —</span>
+    Per fortuna, un cacciatore ha sentito le urla ed è entrato in casa. Alla fine, tutti
+    <span class="blank-wrap">
+      <span class="blank-num">[9 — salvarsi]</span>
+      <select class="sel-tempo" id="sel-9" onchange="updateChips()">
+        <option value="">— tempo —</option>
+        <option value="imperfetto">Imperfetto</option>
+        <option value="passato prossimo">Passato Prossimo</option>
+        <option value="trapassato prossimo">Trapassato Prossimo</option>
+      </select>
+      <input class="inp-conj" id="inp-9" placeholder="coniuga qui…" type="text" oninput="updateChips()">
+    </span>
+    e vissero felici e contenti. 🧺
+  </div>
+
+  <button class="btn-verifica" id="btn-verifica" onclick="verifica()">✅ Verifica le risposte</button>
+
+  <div class="feedback-panel" id="feedback"></div>
+
+  <!-- Grammar reminder -->
+  <div class="grammar-box">
+    <div>
+      <p class="g-title g-imp">🟡 Imperfetto</p>
+      <p>Descrizioni e stati • Azioni abituali • Sfondo della storia • Azioni in corso interrotte</p>
+    </div>
+    <div>
+      <p class="g-title g-pp">🔵 Passato Prossimo</p>
+      <p>Azioni complete e concluse • Eventi che fanno avanzare la storia • Punti di svolta</p>
+    </div>
+    <div>
+      <p class="g-title g-trap">🟣 Trapassato Prossimo</p>
+      <p>Azioni già finite <em>prima</em> di un altro momento passato • Con: già, ancora, prima, quando</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const answers = {
+    1: { tempo: 'imperfetto',          conj: 'si chiamava',     hint: 'Descrizione del personaggio: il nome era una caratteristica stabile.' },
+    2: { tempo: 'passato prossimo',    conj: 'ha preparato',    hint: 'Azione concreta e conclusa che fa partire la storia.' },
+    3: { tempo: 'trapassato prossimo', conj: 'aveva fatto',     hint: 'I dolci erano stati fatti PRIMA che la madre preparasse il cestino.' },
+    4: { tempo: 'imperfetto',          conj: 'camminava',       hint: 'Azione in corso nel momento in cui incontra il lupo (azione di sfondo).' },
+    5: { tempo: 'passato prossimo',    conj: 'ha incontrato',   hint: 'Evento puntuale che interrompe il cammino: incontro specifico e concluso.' },
+    6: { tempo: 'trapassato prossimo', conj: 'era arrivato',    hint: 'Il lupo era arrivato PRIMA di Cappuccetto: anteriorità rispetto al suo arrivo.' },
+    7: { tempo: 'trapassato prossimo', conj: 'aveva mangiato',  hint: 'Azione già compiuta prima che Cappuccetto entrasse in casa.' },
+    8: { tempo: 'passato prossimo',    conj: 'si è messo',      hint: 'Azione specifica e conclusa: il lupo si mette nel letto in un momento preciso.' },
+    9: { tempo: 'passato prossimo',    conj: 'si sono salvati', hint: 'Evento conclusivo della storia: tutti si salvano in un momento definito.' },
+  };
+
+  const chipMap = {
+    1: 'chip-chiamarsi', 2: 'chip-preparare', 3: 'chip-fare',
+    4: 'chip-camminare', 5: 'chip-incontrare', 6: 'chip-arrivare',
+    7: 'chip-mangiare',  8: 'chip-mettersi',   9: 'chip-salvarsi'
+  };
+
+  function normalize(s) {
+    return s.trim().toLowerCase()
+      .replace(/à/g,'a').replace(/è/g,'e').replace(/é/g,'e')
+      .replace(/ì/g,'i').replace(/ò/g,'o').replace(/ù/g,'u');
+  }
+
+  function updateChips() {
+    Object.values(chipMap).forEach(id => {
+      const c = document.getElementById(id);
+      if (c) c.classList.remove('used');
+    });
+    for (let i = 1; i <= 9; i++) {
+      const el = document.getElementById('inp-' + i);
+      if (el && el.value.trim() !== '') {
+        const chip = document.getElementById(chipMap[i]);
+        if (chip) chip.classList.add('used');
+      }
+    }
+  }
+
+  function verifica() {
+    let correct = 0;
+    const lines = [];
+
+    for (let i = 1; i <= 9; i++) {
+      const exp = answers[i];
+      const selEl = document.getElementById('sel-' + i);
+      const inpEl = document.getElementById('inp-' + i);
+      const chosenTempo = (selEl.value || '').trim().toLowerCase();
+      const chosenConj  = normalize(inpEl.value || '');
+      const tempoOk = chosenTempo === exp.tempo;
+      const conjOk  = chosenConj  === normalize(exp.conj);
+      const allOk   = tempoOk && conjOk;
+
+      selEl.disabled = true;
+      inpEl.disabled = true;
+      selEl.className = 'sel-tempo ' + (allOk ? 'corretto' : 'sbagliato');
+      inpEl.className = 'inp-conj '  + (allOk ? 'corretto' : 'sbagliato');
+
+      if (allOk) {
+        correct++;
+        lines.push(`<div class="result-row">✅ <strong>[${i}]</strong> <span style="color:var(--verde-ok)">${exp.conj}</span> (${exp.tempo}) — perfetto!</div>`);
+      } else {
+        let note = '';
+        if (!tempoOk) note += ` · tempo corretto: <em>${exp.tempo}</em>`;
+        lines.push(`<div class="result-row">❌ <strong>[${i}]</strong> Risposta corretta: <span style="color:var(--verde-ok);font-weight:600">${exp.conj}</span> (${exp.tempo})${note}<br><span style="font-size:12px;color:#3d6010">💡 ${exp.hint}</span></div>`);
+      }
+    }
+
+    document.getElementById('btn-verifica').disabled = true;
+
+    const emoji = correct >= 9 ? '🧺' : correct >= 7 ? '🏆' : correct >= 5 ? '⭐' : '📖';
+    const scoreClass = correct >= 9 ? 'score-perfect' : correct >= 6 ? 'score-good' : 'score-low';
+    const msg = correct >= 9 ? 'Magnifico! Hai capito tutto!' : correct >= 6 ? 'Molto bene! Ripassа i verbi sbagliati.' : 'Continua ad esercitarti! Ce la farai!';
+
+    const panel = document.getElementById('feedback');
+    panel.classList.add('show');
+    panel.innerHTML = `
+      <div class="score-box ${scoreClass}" style="margin-bottom:16px;">
+        <div class="emoji">${emoji}</div>
+        <p class="score">${correct} / 9</p>
+        <p class="msg">${msg}</p>
+      </div>
+      ${lines.join('')}
+      <button class="btn-reset" onclick="reset()">🔄 Ricomincia</button>
+    `;
+  }
+
+  function reset() {
+    for (let i = 1; i <= 9; i++) {
+      const s = document.getElementById('sel-' + i);
+      const n = document.getElementById('inp-' + i);
+      s.value = ''; s.disabled = false; s.className = 'sel-tempo';
+      n.value = ''; n.disabled = false; n.className = 'inp-conj';
+    }
+    updateChips();
+    document.getElementById('btn-verifica').disabled = false;
+    const panel = document.getElementById('feedback');
+    panel.classList.remove('show');
+    panel.innerHTML = '';
+  }
+</script>
+</body>
+</html>

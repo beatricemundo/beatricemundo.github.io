@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qui le dit en premier ? — Les jours de la semaine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10152B;
+    --bg-panel: #171E3D;
+    --ink: #F1F1EC;
+    --ink-dim: #9AA1C4;
+    --team-a: #2FD4B0;
+    --team-a-dim: #1A5C4E;
+    --team-b: #FF7A6B;
+    --team-b-dim: #7A3128;
+    --gold: #F4B942;
+    --line: rgba(241,241,236,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; height:100%;
+    background: radial-gradient(120% 140% at 50% -10%, #1C2350 0%, var(--bg) 55%);
+    color: var(--ink);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow:hidden;
+  }
+  .stage{
+    display:grid;
+    grid-template-columns: 1fr min(48vw, 640px) 1fr;
+    align-items:center;
+    height:100vh;
+    padding: 2vh 3vw 12vh;
+    gap: 2vw;
+  }
+  .team{
+    height: 100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    border-radius: 24px;
+    padding: 3vh 1.5vw;
+    text-align:center;
+    transition: transform .15s ease, box-shadow .15s ease;
+    position:relative;
+  }
+  .team.a{ background: linear-gradient(160deg, var(--team-a-dim), #0F1E38 70%); border:1px solid rgba(47,212,176,0.35); }
+  .team.b{ background: linear-gradient(200deg, var(--team-b-dim), #0F1E38 70%); border:1px solid rgba(255,122,107,0.35); }
+  .team.flash{ transform: scale(1.03); }
+  .team.a.flash{ box-shadow: 0 0 0 3px var(--team-a), 0 0 40px rgba(47,212,176,0.5); }
+  .team.b.flash{ box-shadow: 0 0 0 3px var(--team-b), 0 0 40px rgba(255,122,107,0.5); }
+
+  .team-name{
+    font-size: clamp(1.1rem, 2.4vw, 1.7rem);
+    font-weight:600;
+    outline:none;
+    border-bottom: 1px dashed transparent;
+    padding: 2px 6px;
+    cursor:text;
+    max-width: 90%;
+  }
+  .team-name:hover, .team-name:focus{ border-bottom-color: var(--ink-dim); }
+  .team.a .team-name{ color: var(--team-a); }
+  .team.b .team-name{ color: var(--team-b); }
+
+  .score{
+    font-family:'Archivo Black', sans-serif;
+    font-size: clamp(3.5rem, 10vw, 7rem);
+    line-height:1;
+    margin: 1vh 0 2vh;
+  }
+
+  .point-btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    padding: 1.1vh 1.4vw;
+    border-radius: 999px;
+    border: none;
+    cursor:pointer;
+    letter-spacing:0.01em;
+    transition: transform .08s ease, filter .12s ease, opacity .12s ease;
+  }
+  .point-btn:active{ transform: scale(0.96); }
+  .team.a .point-btn{ background: var(--team-a); color:#08201B; }
+  .team.b .point-btn{ background: var(--team-b); color:#2B0D08; }
+  .point-btn:hover{ filter: brightness(1.08); }
+  .point-btn:disabled{ opacity: 0.35; cursor: default; filter:none; }
+
+  .center{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 3vh;
+  }
+  .prompt{
+    color: var(--ink-dim);
+    font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+    letter-spacing: 0.02em;
+    text-align:center;
+  }
+  .mode-label{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size: clamp(1.3rem, 2.6vw, 1.9rem);
+    letter-spacing: 0.03em;
+    color: var(--team-a);
+    text-transform: uppercase;
+  }
+  .mode-label.dopo{ color: var(--team-b); }
+  .mode-label.traduci{ color: var(--gold); }
+  .day{
+    font-family:'Archivo Black', sans-serif;
+    font-size: clamp(3.6rem, 9vw, 6.5rem);
+    line-height: 0.95;
+    color: var(--gold);
+    text-shadow: 0 0 60px rgba(244,185,66,0.25);
+    min-width: 3ch;
+    text-transform: uppercase;
+    text-align:center;
+  }
+  .day.urgent{ color: var(--team-b); text-shadow: 0 0 60px rgba(255,122,107,0.35); }
+
+  .timer-track{
+    width: min(60%, 340px);
+    height: 10px;
+    background: var(--bg-panel);
+    border-radius: 999px;
+    overflow:hidden;
+    border: 1px solid var(--line);
+  }
+  .timer-fill{
+    height:100%;
+    width:100%;
+    background: linear-gradient(90deg, var(--team-a), var(--gold));
+    transition: width 1s linear, background .3s ease;
+  }
+  .timer-fill.mid{ background: linear-gradient(90deg, var(--gold), var(--team-b)); }
+  .timer-fill.low{ background: var(--team-b); }
+
+  .start-overlay{
+    position: fixed;
+    inset: 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 3vh;
+    background: rgba(16,21,43,0.92);
+    backdrop-filter: blur(3px);
+    z-index: 10;
+  }
+  .start-overlay h1{
+    font-family:'Archivo Black', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    margin:0;
+    text-align:center;
+    padding: 0 6vw;
+  }
+  .start-overlay p{
+    color: var(--ink-dim);
+    font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+    text-align:center;
+    max-width: 480px;
+    padding: 0 6vw;
+    margin:0;
+  }
+  .start-btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    background: var(--gold);
+    color: #2B1F04;
+    border: none;
+    border-radius: 999px;
+    padding: 1.6vh 3.2vw;
+    cursor:pointer;
+    transition: transform .08s ease, filter .12s ease;
+  }
+  .start-btn:hover{ filter: brightness(1.08); }
+  .start-btn:active{ transform: scale(0.97); }
+  .start-overlay.hidden{ display:none; }
+
+  .controls{
+    position: fixed;
+    left:0; right:0; bottom:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 14px;
+    padding: 1.6vh 0 2.2vh;
+    background: linear-gradient(0deg, rgba(16,21,43,0.95), rgba(16,21,43,0));
+  }
+  .ctrl-btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    font-weight:500;
+    color: var(--ink-dim);
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 18px;
+    cursor:pointer;
+    transition: color .12s ease, border-color .12s ease;
+  }
+  .ctrl-btn:hover{ color: var(--ink); border-color: var(--ink-dim); }
+  .ctrl-btn.primary{ color: var(--ink); border-color: var(--gold); }
+  kbd{
+    font-family: inherit;
+    font-size: 0.72rem;
+    background: rgba(255,255,255,0.08);
+    padding: 1px 6px;
+    border-radius: 5px;
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="start-overlay" id="startOverlay">
+  <h1>Les jours de la semaine</h1>
+  <button class="start-btn" id="btnStart">Commencer (start) la partie</button>
+</div>
+
+<div class="stage">
+  <div class="team a" id="panelA">
+    <div class="team-name" contenteditable="true" spellcheck="false" id="nameA">Équipe 1</div>
+    <div class="score" id="scoreA">0</div>
+    <button class="point-btn" id="btnA" disabled>Un point ici <kbd>A</kbd></button>
+  </div>
+
+  <div class="center">
+    <div class="prompt">Dites (say) le jour correct à haute voix avant (before) l'autre équipe</div>
+    <div class="mode-label" id="modeDisplay">–</div>
+    <div class="day" id="dayDisplay">–</div>
+    <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+  </div>
+
+  <div class="team b" id="panelB">
+    <div class="team-name" contenteditable="true" spellcheck="false" id="nameB">Équipe 2</div>
+    <div class="score" id="scoreB">0</div>
+    <button class="point-btn" id="btnB" disabled>Un point ici <kbd>L</kbd></button>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn primary" id="btnNext" disabled>Nouveau jour <kbd>espace</kbd></button>
+  <button class="ctrl-btn" id="btnReset">Réinitialiser le score</button>
+</div>
+
+<script>
+  const ROUND_SECONDS = 30;
+  const DAYS_FR = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+  const DAYS_EN = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const MODES = [
+    { key: 'avant',   label: 'LE JOUR AVANT (before)' },
+    { key: 'apres',   label: 'LE JOUR APRÈS (aftter)' },
+    { key: 'traduis', label: 'COMMENT DIT-ON EN FRANÇAIS ?' }
+  ];
+
+  const dayEl = document.getElementById('dayDisplay');
+  const modeEl = document.getElementById('modeDisplay');
+  const timerFill = document.getElementById('timerFill');
+  const scoreAEl = document.getElementById('scoreA');
+  const scoreBEl = document.getElementById('scoreB');
+  const panelA = document.getElementById('panelA');
+  const panelB = document.getElementById('panelB');
+  const btnA = document.getElementById('btnA');
+  const btnB = document.getElementById('btnB');
+  const btnNext = document.getElementById('btnNext');
+  const startOverlay = document.getElementById('startOverlay');
+
+  let scoreA = 0, scoreB = 0;
+  let lastDayIndex = null;
+  let lastMode = null;
+  let secondsLeft = ROUND_SECONDS;
+  let tickHandle = null;
+  let started = false;
+
+  function randomDayIndex(){
+    let i;
+    do { i = Math.floor(Math.random() * DAYS_FR.length); } while (i === lastDayIndex);
+    lastDayIndex = i;
+    return i;
+  }
+
+  function randomMode(){
+    let m;
+    do { m = MODES[Math.floor(Math.random() * MODES.length)]; } while (m === lastMode && MODES.length > 1);
+    lastMode = m;
+    return m;
+  }
+
+  function startRound(){
+    clearInterval(tickHandle);
+    const idx = randomDayIndex();
+    const mode = randomMode();
+    dayEl.textContent = (mode.key === 'traduis') ? DAYS_EN[idx] : DAYS_FR[idx];
+    dayEl.classList.remove('urgent');
+    modeEl.textContent = mode.label;
+    modeEl.classList.remove('dopo', 'traduci');
+    if (mode.key === 'apres') modeEl.classList.add('dopo');
+    if (mode.key === 'traduis') modeEl.classList.add('traduci');
+    secondsLeft = ROUND_SECONDS;
+    updateTimerBar();
+    tickHandle = setInterval(() => {
+      secondsLeft -= 1;
+      updateTimerBar();
+      if (secondsLeft <= 0) clearInterval(tickHandle);
+    }, 1000);
+  }
+
+  function updateTimerBar(){
+    const pct = Math.max(0, (secondsLeft / ROUND_SECONDS) * 100);
+    timerFill.style.width = pct + '%';
+    timerFill.classList.remove('mid', 'low');
+    if (pct <= 20) { timerFill.classList.add('low'); dayEl.classList.add('urgent'); }
+    else if (pct <= 50) { timerFill.classList.add('mid'); }
+  }
+
+  function flashPanel(panel){
+    panel.classList.add('flash');
+    setTimeout(() => panel.classList.remove('flash'), 400);
+  }
+
+  function awardPoint(team){
+    if (!started) return;
+    if (team === 'A'){ scoreA++; scoreAEl.textContent = scoreA; flashPanel(panelA); }
+    else { scoreB++; scoreBEl.textContent = scoreB; flashPanel(panelB); }
+    setTimeout(startRound, 900);
+  }
+
+  function beginGame(){
+    started = true;
+    startOverlay.classList.add('hidden');
+    btnA.disabled = false;
+    btnB.disabled = false;
+    btnNext.disabled = false;
+    startRound();
+  }
+
+  document.getElementById('btnStart').addEventListener('click', beginGame);
+  btnA.addEventListener('click', () => awardPoint('A'));
+  btnB.addEventListener('click', () => awardPoint('B'));
+  btnNext.addEventListener('click', () => { if (started) startRound(); });
+  document.getElementById('btnReset').addEventListener('click', () => {
+    scoreA = 0; scoreB = 0;
+    scoreAEl.textContent = '0'; scoreBEl.textContent = '0';
+    if (started) startRound();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (!started){
+      if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); beginGame(); }
+      return;
+    }
+    if (e.key === ' '){ e.preventDefault(); startRound(); }
+    if (e.key.toLowerCase() === 'a'){ awardPoint('A'); }
+    if (e.key.toLowerCase() === 'l'){ awardPoint('B'); }
+  });
+</script>
+
+</body>
+</html>

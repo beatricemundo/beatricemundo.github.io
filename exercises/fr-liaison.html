@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liaison ou pas de liaison?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F4EFE3;
+    --card: #FBF8F0;
+    --navy: #1E3350;
+    --navy-soft: #DCE3EC;
+    --burgundy: #7C2D3B;
+    --burgundy-soft: #EFD9DC;
+    --ink: #24303D;
+    --ink-soft: #5B6B7C;
+    --rule: #D6DCE3;
+    --green: #4B7A5B;
+    --green-soft: #DCE9DF;
+    --red: #A33B3B;
+    --red-soft: #F1DCDC;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 44px 24px 60px;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 2rem;
+    margin: 0 0 20px;
+  }
+
+  .instructions {
+    background: var(--navy-soft);
+    border-left: 3px solid var(--navy);
+    padding: 14px 18px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+    font-size: 0.98rem;
+  }
+
+  .carousel { position: relative; overflow: hidden; }
+
+  .track {
+    display: flex;
+    transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .slide { flex: 0 0 100%; padding: 2px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 34px 32px;
+    min-height: 190px;
+    text-align: center;
+  }
+
+  .phrase {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 22px;
+  }
+
+  .btns { display: flex; justify-content: center; gap: 10px; }
+
+  .btns button {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem;
+    border: 1px solid var(--rule);
+    background: #fff;
+    padding: 8px 18px;
+    border-radius: 16px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .btns button.correct { background: var(--green-soft); border-color: var(--green); color: #2F4E3A; }
+  .btns button.wrong { background: var(--red-soft); border-color: var(--red); color: #6E2626; }
+  .btns button:disabled { cursor: default; }
+
+  .reveal {
+    margin-top: 16px;
+    font-style: italic;
+    color: var(--burgundy);
+    font-size: 0.95rem;
+    visibility: hidden;
+  }
+
+  .reveal.show { visibility: visible; }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 22px;
+  }
+
+  .nav button {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav button:hover { background: var(--navy-soft); border-color: var(--navy); }
+
+  .dots { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; max-width: 220px; }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--rule);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+  }
+
+  .dot.active { background: var(--burgundy); transform: scale(1.3); }
+
+  .counter {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Liaison ou pas de liaison?</h1>
+
+  <div class="instructions">
+    En paires, lisez (read) les expressions à haute voix (aloud). Puis, cliquez (click) sur <strong>Liaison</strong> ou <strong>Pas de liaison</strong>.
+  </div>
+
+  <div class="carousel">
+    <div class="track" id="track"></div>
+  </div>
+
+  <div class="nav">
+    <button id="prevBtn" aria-label="Précédent">‹</button>
+    <div class="dots" id="dots"></div>
+    <button id="nextBtn" aria-label="Suivant">›</button>
+  </div>
+
+  <p class="counter" id="counter"></p>
+
+</div>
+
+<script>
+  const items = [
+    { phrase: "les amis", liaison: true, transcription: "[lez‿ami]" },
+    { phrase: "les chats", liaison: false, transcription: "[le ʃa]" },
+    { phrase: "vous avez", liaison: true, transcription: "[vu‿zave]" },
+    { phrase: "vous parlez", liaison: false, transcription: "[vu paʁle]" },
+    { phrase: "un enfant", liaison: true, transcription: "[œ̃‿nɑ̃fɑ̃]" },
+    { phrase: "un stylo", liaison: false, transcription: "[œ̃ stilo]" },
+    { phrase: "nous avons", liaison: true, transcription: "[nu‿zavɔ̃]" },
+    { phrase: "nous chantons", liaison: false, transcription: "[nu ʃɑ̃tɔ̃]" },
+    { phrase: "ils ont", liaison: true, transcription: "[ilz‿ɔ̃]" },
+    { phrase: "ils dansent", liaison: false, transcription: "[il dɑ̃s]" }
+  ];
+
+  const track = document.getElementById('track');
+  const dotsWrap = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const total = items.length;
+  let index = 0;
+
+  items.forEach((item, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'slide';
+
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const phrase = document.createElement('div');
+    phrase.className = 'phrase';
+    phrase.textContent = item.phrase;
+
+    const btns = document.createElement('div');
+    btns.className = 'btns';
+
+    const reveal = document.createElement('div');
+    reveal.className = 'reveal';
+    reveal.textContent = item.transcription + (item.liaison ? ' — liaison' : ' — pas de liaison');
+
+    [true, false].forEach(val => {
+      const btn = document.createElement('button');
+      btn.textContent = val ? 'Liaison' : 'Pas de liaison';
+      btn.addEventListener('click', () => {
+        const allBtns = btns.querySelectorAll('button');
+        allBtns.forEach(b => b.disabled = true);
+        if (val === item.liaison) {
+          btn.classList.add('correct');
+        } else {
+          btn.classList.add('wrong');
+          const correctBtn = Array.from(allBtns).find(b =>
+            (item.liaison && b.textContent === 'Liaison') ||
+            (!item.liaison && b.textContent === 'Pas de liaison')
+          );
+          if (correctBtn) correctBtn.classList.add('correct');
+        }
+        reveal.classList.add('show');
+      });
+      btns.appendChild(btn);
+    });
+
+    card.appendChild(phrase);
+    card.appendChild(btns);
+    card.appendChild(reveal);
+    slide.appendChild(card);
+    track.appendChild(slide);
+
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Aller à la carte ' + (i + 1));
+    dot.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(dot);
+  });
+
+  function update() {
+    track.style.transform = 'translateX(-' + (index * 100) + '%)';
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index));
+    counter.textContent = 'Carte ' + (index + 1) + ' sur ' + total;
+  }
+
+  function goTo(i) {
+    index = (i + total) % total;
+    update();
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(index - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(index + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') goTo(index - 1);
+    if (e.key === 'ArrowRight') goTo(index + 1);
+  });
+
+  let touchStartX = null;
+  track.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  track.addEventListener('touchend', (e) => {
+    if (touchStartX === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX;
+    if (diff > 50) goTo(index - 1);
+    if (diff < -50) goTo(index + 1);
+    touchStartX = null;
+  });
+
+  update();
+</script>
+</body>
+</html>

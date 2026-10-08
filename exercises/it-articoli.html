@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A caccia di articoli — ITL1001</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board-bg-1: #16281f;
+    --board-bg-2: #1c3226;
+    --frame-1: #7a5033;
+    --frame-2: #5a3a24;
+    --frame-3: #3c2718;
+    --chalk-white: #f2efe6;
+    --chalk-dim: rgba(242,239,230,0.6);
+    --chalk-faint: rgba(242,239,230,0.28);
+    --coral: #e8927c;
+    --coral-dim: rgba(232,146,124,0.18);
+    --blue: #8fc3d6;
+    --blue-dim: rgba(143,195,214,0.18);
+    --yellow: #e6c468;
+    --red: #d97066;
+    --green: #9bc98a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: #0d1a14;
+    font-family: 'Inter', sans-serif;
+    color: var(--chalk-white);
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .frame-wrap {
+    width: 100%;
+    max-width: 620px;
+    background: linear-gradient(180deg, var(--frame-1), var(--frame-2) 55%, var(--frame-3));
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(0,0,0,0.3);
+  }
+
+  .frame-wrap::before {
+    content: "";
+    display: block;
+    height: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    background: repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0 3px, transparent 3px 22px);
+    opacity: 0.5;
+  }
+
+  .board {
+    position: relative;
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(255,255,255,0.05), transparent 40%),
+      radial-gradient(ellipse at 80% 70%, rgba(255,255,255,0.04), transparent 45%),
+      radial-gradient(ellipse at 50% 95%, rgba(255,255,255,0.06), transparent 40%),
+      linear-gradient(155deg, var(--board-bg-2), var(--board-bg-1));
+    border-radius: 8px;
+    padding: 28px 24px 22px;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  h1.title {
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    font-size: 2.7rem;
+    line-height: 1;
+    margin: 0 0 2px 0;
+    color: var(--chalk-white);
+    letter-spacing: 0.5px;
+  }
+
+  .subtitle {
+    font-size: 0.88rem;
+    color: var(--chalk-dim);
+    margin: 0;
+  }
+
+  .rules-btn {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--chalk-faint);
+    background: transparent;
+    color: var(--chalk-dim);
+    font-family: 'Caveat', cursive;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .rules-btn:hover { color: var(--chalk-white); border-color: var(--chalk-dim); transform: scale(1.08); }
+
+  .mode-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  .mode-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--chalk-faint);
+    background: transparent;
+    color: var(--chalk-dim);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .mode-btn:hover { border-color: var(--chalk-dim); color: var(--chalk-white); }
+  .mode-btn.active {
+    background: var(--chalk-white);
+    color: var(--board-bg-1);
+    border-color: var(--chalk-white);
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    font-size: 0.8rem;
+    color: var(--chalk-dim);
+  }
+
+  .dots { display: flex; gap: 5px; }
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1.3px solid var(--chalk-faint);
+    background: transparent;
+  }
+  .dot.correct { background: var(--green); border-color: var(--green); }
+  .dot.wrong { background: var(--red); border-color: var(--red); }
+  .dot.current { border-color: var(--chalk-white); }
+
+  .stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px 0 6px;
+    min-height: 220px;
+  }
+
+  .task-tag {
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .task-tag.masch { background: var(--coral-dim); color: var(--coral); }
+  .task-tag.femm { background: var(--blue-dim); color: var(--blue); }
+
+  .word-display {
+    font-family: 'Caveat', cursive;
+    font-weight: 600;
+    font-size: 3.4rem;
+    letter-spacing: 1px;
+    color: var(--chalk-white);
+    margin: 0 0 26px 0;
+    text-shadow: 0 0 18px rgba(242,239,230,0.08);
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 10px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .opt-btn {
+    font-family: 'Caveat', cursive;
+    font-size: 1.6rem;
+    font-weight: 600;
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 2px dashed var(--chalk-faint);
+    background: rgba(242,239,230,0.03);
+    color: var(--chalk-white);
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--chalk-dim);
+    transform: translateY(-2px);
+    background: rgba(242,239,230,0.07);
+  }
+  .opt-btn:disabled { cursor: default; }
+  .opt-btn.correct-pick {
+    border-style: solid;
+    border-color: var(--green);
+    background: rgba(155,201,138,0.15);
+    color: var(--green);
+  }
+  .opt-btn.wrong-pick {
+    border-style: solid;
+    border-color: var(--red);
+    background: rgba(217,112,102,0.15);
+    color: var(--red);
+  }
+  .opt-btn.reveal-correct {
+    border-style: solid;
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .feedback {
+    margin-top: 20px;
+    max-width: 440px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--chalk-dim);
+    opacity: 0;
+    transform: translateY(4px);
+    animation: chalkIn 0.35s ease forwards;
+  }
+  @keyframes chalkIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .feedback strong.verdict-correct { color: var(--green); }
+  .feedback strong.verdict-wrong { color: var(--red); }
+
+  .next-btn, .primary-btn {
+    margin-top: 22px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 11px 26px;
+    border-radius: 24px;
+    border: none;
+    background: var(--chalk-white);
+    color: var(--board-bg-1);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .next-btn:hover, .primary-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+
+  .end-screen { text-align: center; padding: 10px 0; }
+  .end-score {
+    font-family: 'Caveat', cursive;
+    font-size: 3.4rem;
+    font-weight: 700;
+    color: var(--yellow);
+    margin: 6px 0;
+  }
+  .end-msg { color: var(--chalk-white); font-size: 1.05rem; margin-bottom: 14px; }
+  .mistakes-list {
+    text-align: left;
+    max-width: 380px;
+    margin: 14px auto 0;
+    font-size: 0.85rem;
+    color: var(--chalk-dim);
+  }
+  .mistakes-list li { margin-bottom: 5px; }
+  .mistakes-list b { color: var(--chalk-white); }
+
+  /* rules overlay */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,20,15,0.94);
+    border-radius: 8px;
+    padding: 26px 24px;
+    display: none;
+    overflow-y: auto;
+  }
+  .overlay.open { display: block; }
+  .overlay h2 {
+    font-family: 'Caveat', cursive;
+    font-size: 2rem;
+    margin: 0 0 14px 0;
+    color: var(--chalk-white);
+  }
+  .rule-block { margin-bottom: 16px; }
+  .rule-block h3 {
+    font-size: 0.85rem;
+    text-transform: none;
+    color: var(--yellow);
+    margin: 0 0 6px 0;
+    font-weight: 600;
+  }
+  .rule-block table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .rule-block td { padding: 4px 6px; border-bottom: 1px solid rgba(242,239,230,0.08); color: var(--chalk-dim); }
+  .rule-block td.art { color: var(--chalk-white); font-family: 'Caveat', cursive; font-size: 1.15rem; }
+  .close-overlay {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: none; border: none;
+    color: var(--chalk-dim);
+    font-size: 1.4rem;
+    cursor: pointer;
+  }
+  .close-overlay:hover { color: var(--chalk-white); }
+
+  @media (max-width: 420px) {
+    .word-display { font-size: 2.6rem; }
+    h1.title { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame-wrap">
+  <div class="board" id="board">
+
+    <div class="top-row">
+      <div>
+        <h1 class="title">A caccia di articoli</h1>
+        <p class="subtitle">Scegli (choose) l'articolo corretto</p>
+      </div>
+      <button class="rules-btn" id="rulesBtn" title="Regole rapide">?</button>
+    </div>
+
+    <div class="mode-row" id="modeRow">
+      <button class="mode-btn" data-mode="det">Determinativi</button>
+      <button class="mode-btn" data-mode="indet">Indeterminativi</button>
+      <button class="mode-btn" data-mode="misto">Misto</button>
+    </div>
+
+    <div class="progress-row" id="progressRow" style="display:none;">
+      <span id="scoreText">0 / 0</span>
+      <div class="dots" id="dots"></div>
+    </div>
+
+    <div class="stage" id="stage">
+      <p style="color:var(--chalk-dim); font-size:0.95rem; max-width:340px;">
+        Scegli (choose) una modalità (modality) per iniziare (start) l'esercizio.
+      </p>
+    </div>
+
+    <div class="overlay" id="rulesOverlay">
+      <button class="close-overlay" id="closeRules">&times;</button>
+      <h2>Regole rapide</h2>
+      <div class="rule-block">
+        <h3>Articoli determinativi (singolare)</h3>
+        <table>
+          <tr><td class="art">il</td><td>maschile, inizia con consonante — <i>il libro</i></td></tr>
+          <tr><td class="art">lo</td><td>maschile, inizia con s+consonante, z, gn, ps, pn, x, y — <i>lo studente</i></td></tr>
+          <tr><td class="art">l'</td><td>maschile o femminile, inizia con vocale — <i>l'amico, l'amica</i></td></tr>
+          <tr><td class="art">la</td><td>femminile, inizia con consonante — <i>la casa</i></td></tr>
+        </table>
+      </div>
+      <div class="rule-block">
+        <h3>Articoli determinativi (plurale)</h3>
+        <table>
+          <tr><td class="art">i</td><td>maschile, inizia con consonante — <i>i libri</i></td></tr>
+          <tr><td class="art">gli</td><td>maschile, inizia con vocale o s+consonante/z/gn/ps/pn/x — <i>gli amici, gli studenti</i></td></tr>
+          <tr><td class="art">le</td><td>femminile, sempre — <i>le case, le amiche</i></td></tr>
+        </table>
+      </div>
+      <div class="rule-block">
+        <h3>Articoli indeterminativi (solo singolare)</h3>
+        <table>
+          <tr><td class="art">un</td><td>maschile, inizia con consonante o vocale — <i>un libro, un amico</i></td></tr>
+          <tr><td class="art">uno</td><td>maschile, inizia con s+consonante, z, gn, ps, pn, x, y — <i>uno studente</i></td></tr>
+          <tr><td class="art">una</td><td>femminile, inizia con consonante — <i>una casa</i></td></tr>
+          <tr><td class="art">un'</td><td>femminile, inizia con vocale — <i>un'amica</i></td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+
+  const WORDS = [
+    {w:"libro", g:"m", n:"s", r:"cons"},
+    {w:"tavolo", g:"m", n:"s", r:"cons"},
+    {w:"cane", g:"m", n:"s", r:"cons"},
+    {w:"gatto", g:"m", n:"s", r:"cons"},
+    {w:"ragazzo", g:"m", n:"s", r:"cons"},
+    {w:"quaderno", g:"m", n:"s", r:"cons"},
+    {w:"treno", g:"m", n:"s", r:"cons"},
+    {w:"parco", g:"m", n:"s", r:"cons"},
+    {w:"bar", g:"m", n:"s", r:"cons"},
+    {w:"film", g:"m", n:"s", r:"cons"},
+    {w:"studente", g:"m", n:"s", r:"spec"},
+    {w:"zaino", g:"m", n:"s", r:"spec"},
+    {w:"gnomo", g:"m", n:"s", r:"spec"},
+    {w:"psicologo", g:"m", n:"s", r:"spec"},
+    {w:"sport", g:"m", n:"s", r:"spec"},
+    {w:"stadio", g:"m", n:"s", r:"spec"},
+    {w:"specchio", g:"m", n:"s", r:"spec"},
+    {w:"zio", g:"m", n:"s", r:"spec"},
+    {w:"amico", g:"m", n:"s", r:"vow"},
+    {w:"orologio", g:"m", n:"s", r:"vow"},
+    {w:"albero", g:"m", n:"s", r:"vow"},
+    {w:"autobus", g:"m", n:"s", r:"vow"},
+    {w:"ombrello", g:"m", n:"s", r:"vow"},
+    {w:"elefante", g:"m", n:"s", r:"vow"},
+    {w:"ufficio", g:"m", n:"s", r:"vow"},
+    {w:"casa", g:"f", n:"s", r:"cons"},
+    {w:"ragazza", g:"f", n:"s", r:"cons"},
+    {w:"penna", g:"f", n:"s", r:"cons"},
+    {w:"matita", g:"f", n:"s", r:"cons"},
+    {w:"borsa", g:"f", n:"s", r:"cons"},
+    {w:"finestra", g:"f", n:"s", r:"cons"},
+    {w:"porta", g:"f", n:"s", r:"cons"},
+    {w:"sedia", g:"f", n:"s", r:"cons"},
+    {w:"pizza", g:"f", n:"s", r:"cons"},
+    {w:"amica", g:"f", n:"s", r:"vow"},
+    {w:"isola", g:"f", n:"s", r:"vow"},
+    {w:"automobile", g:"f", n:"s", r:"vow"},
+    {w:"idea", g:"f", n:"s", r:"vow"},
+    {w:"arancia", g:"f", n:"s", r:"vow"},
+    {w:"entrata", g:"f", n:"s", r:"vow"},
+    {w:"ora", g:"f", n:"s", r:"vow"},
+    {w:"erba", g:"f", n:"s", r:"vow"},
+    {w:"libri", g:"m", n:"p", r:"cons"},
+    {w:"treni", g:"m", n:"p", r:"cons"},
+    {w:"ragazzi", g:"m", n:"p", r:"cons"},
+    {w:"studenti", g:"m", n:"p", r:"spec"},
+    {w:"zaini", g:"m", n:"p", r:"spec"},
+    {w:"amici", g:"m", n:"p", r:"vow"},
+    {w:"alberi", g:"m", n:"p", r:"vow"},
+    {w:"case", g:"f", n:"p", r:"cons"},
+    {w:"ragazze", g:"f", n:"p", r:"cons"},
+    {w:"amiche", g:"f", n:"p", r:"vow"},
+    {w:"isole", g:"f", n:"p", r:"vow"}
+  ];
+
+  const RULE_LABEL = {
+    cons: "inizia con una consonante semplice",
+    spec: "inizia con s+consonante, z, gn, ps, pn, x o y",
+    vow: "inizia con una vocale"
+  };
+
+  function correctDefinite(item){
+    if(item.n === 's'){
+      if(item.g === 'm'){
+        if(item.r === 'cons') return 'il';
+        if(item.r === 'spec') return 'lo';
+        return "l'";
+      } else {
+        if(item.r === 'vow') return "l'";
+        return 'la';
+      }
+    } else {
+      if(item.g === 'm'){
+        if(item.r === 'cons') return 'i';
+        return 'gli';
+      }
+      return 'le';
+    }
+  }
+
+  function correctIndefinite(item){
+    if(item.g === 'm'){
+      if(item.r === 'spec') return 'uno';
+      return 'un';
+    } else {
+      if(item.r === 'vow') return "un'";
+      return 'una';
+    }
+  }
+
+  const DEF_SING_OPTS = ['il','lo',"l'",'la'];
+  const DEF_PLUR_OPTS = ['i','gli','le'];
+  const INDEF_OPTS = ['un','uno','una',"un'"];
+
+  const TOTAL_Q = 10;
+
+  let state = {
+    mode: null,
+    queue: [],
+    idx: 0,
+    score: 0,
+    answered: false,
+    history: [] // {correct: bool, item, task, given, right}
+  };
+
+  const board = document.getElementById('board');
+  const stage = document.getElementById('stage');
+  const modeRow = document.getElementById('modeRow');
+  const progressRow = document.getElementById('progressRow');
+  const scoreText = document.getElementById('scoreText');
+  const dotsEl = document.getElementById('dots');
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i+1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildQueue(mode){
+    let pool, taskFor;
+    if(mode === 'det'){
+      pool = WORDS.slice();
+      taskFor = () => 'det';
+    } else if(mode === 'indet'){
+      pool = WORDS.filter(w => w.n === 's');
+      taskFor = () => 'indet';
+    } else {
+      pool = WORDS.slice();
+      taskFor = (item) => item.n === 'p' ? 'det' : (Math.random() < 0.5 ? 'det' : 'indet');
+    }
+    let source = shuffle(pool);
+    while(source.length < TOTAL_Q){
+      source = source.concat(shuffle(pool));
+    }
+    return source.slice(0, TOTAL_Q).map(item => ({ item, task: taskFor(item) }));
+  }
+
+  function startMode(mode){
+    state = { mode, queue: buildQueue(mode), idx: 0, score: 0, answered: false, history: [] };
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    progressRow.style.display = 'flex';
+    renderDots();
+    renderQuestion();
+  }
+
+  function renderDots(){
+    dotsEl.innerHTML = '';
+    for(let i = 0; i < TOTAL_Q; i++){
+      const d = document.createElement('div');
+      d.className = 'dot';
+      const h = state.history[i];
+      if(h) d.classList.add(h.correct ? 'correct' : 'wrong');
+      else if(i === state.idx) d.classList.add('current');
+      dotsEl.appendChild(d);
+    }
+    scoreText.textContent = state.score + ' / ' + state.history.length;
+  }
+
+  function taskLabel(task, item){
+    return { cls: item.g === 'm' ? 'masch' : 'femm', text: (task === 'det' ? 'Articolo determinativo' : 'Articolo indeterminativo') + ' · ' + (item.g === 'm' ? 'maschile' : 'femminile') + (item.n === 'p' ? ' plurale' : ' singolare') };
+  }
+
+  function explanation(item, task, correct, correctVal){
+    const genderWord = item.g === 'm' ? 'maschile' : 'femminile';
+    const numberWord = item.n === 'p' ? 'plurale' : 'singolare';
+    const ruleText = item.n === 'p'
+      ? (item.g === 'f' ? "il femminile plurale usa sempre \u201cle\u201d" : (item.r === 'cons' ? RULE_LABEL.cons : RULE_LABEL.vow + ' o ' + RULE_LABEL.spec))
+      : RULE_LABEL[item.r];
+    const verdict = correct
+      ? '<strong class="verdict-correct">Giusto!</strong>'
+      : '<strong class="verdict-wrong">Quasi!</strong>';
+    return verdict + ' «' + item.w + '» \u00e8 ' + genderWord + ' ' + numberWord + ' e ' + ruleText + ' \u2192 <strong>' + correctVal + ' ' + item.w + '</strong>.';
+  }
+
+  function renderQuestion(){
+    const q = state.queue[state.idx];
+    const item = q.item;
+    const task = q.task;
+    const correctVal = task === 'det' ? correctDefinite(item) : correctIndefinite(item);
+    const options = task === 'det' ? (item.n === 'p' ? DEF_PLUR_OPTS : DEF_SING_OPTS) : INDEF_OPTS;
+    const lbl = taskLabel(task, item);
+
+    state.answered = false;
+
+    stage.innerHTML =
+      '<div class="task-tag ' + lbl.cls + '">' + lbl.text + '</div>' +
+      '<p class="word-display">' + item.w + '</p>' +
+      '<div class="options" id="optionsRow"></div>' +
+      '<div id="feedbackArea"></div>';
+
+    const optionsRow = document.getElementById('optionsRow');
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => handleAnswer(opt, correctVal, item, task));
+      optionsRow.appendChild(btn);
+    });
+
+    renderDots();
+  }
+
+  function handleAnswer(chosen, correctVal, item, task){
+    if(state.answered) return;
+    state.answered = true;
+    const isCorrect = chosen === correctVal;
+    if(isCorrect) state.score++;
+    state.history.push({ correct: isCorrect, item, task, given: chosen, right: correctVal });
+
+    document.querySelectorAll('.opt-btn').forEach(btn => {
+      btn.disabled = true;
+      if(btn.textContent === chosen){
+        btn.classList.add(isCorrect ? 'correct-pick' : 'wrong-pick');
+      } else if(btn.textContent === correctVal && !isCorrect){
+        btn.classList.add('reveal-correct');
+      }
+    });
+
+    const feedbackArea = document.getElementById('feedbackArea');
+    feedbackArea.innerHTML =
+      '<p class="feedback">' + explanation(item, task, isCorrect, correctVal) + '</p>' +
+      '<button class="next-btn" id="nextBtn">' + (state.idx === TOTAL_Q - 1 ? 'Vedi il risultato' : 'Avanti \u2192') + '</button>';
+
+    document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+    renderDots();
+  }
+
+  function nextQuestion(){
+    if(state.idx < TOTAL_Q - 1){
+      state.idx++;
+      renderQuestion();
+    } else {
+      renderEnd();
+    }
+  }
+
+  function renderEnd(){
+    const pct = state.score / TOTAL_Q;
+    let msg;
+    if(pct === 1) msg = 'Perfetto! Conosci bene gli articoli.';
+    else if(pct >= 0.8) msg = 'Molto bene! Solo qualche dettaglio da rivedere.';
+    else if(pct >= 0.5) msg = 'Bel lavoro — continua a esercitarti.';
+    else msg = 'Ripassa le regole e riprova, ce la puoi fare.';
+
+    const mistakes = state.history.filter(h => !h.correct);
+    let mistakesHtml = '';
+    if(mistakes.length){
+      mistakesHtml = '<ul class="mistakes-list">' + mistakes.map(m =>
+        '<li>' + m.item.w + ' \u2192 <b>' + m.right + '</b> (hai scelto \u201c' + m.given + '\u201d)</li>'
+      ).join('') + '</ul>';
+    }
+
+    stage.innerHTML =
+      '<div class="end-screen">' +
+        '<p class="end-msg">' + msg + '</p>' +
+        '<div class="end-score">' + state.score + ' / ' + TOTAL_Q + '</div>' +
+        mistakesHtml +
+        '<button class="primary-btn" id="restartBtn">Ricomincia</button>' +
+      '</div>';
+
+    document.getElementById('restartBtn').addEventListener('click', () => startMode(state.mode));
+  }
+
+  modeRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mode-btn');
+    if(!btn) return;
+    startMode(btn.dataset.mode);
+  });
+
+  document.getElementById('rulesBtn').addEventListener('click', () => {
+    document.getElementById('rulesOverlay').classList.add('open');
+  });
+  document.getElementById('closeRules').addEventListener('click', () => {
+    document.getElementById('rulesOverlay').classList.remove('open');
+  });
+
+})();
+</script>
+
+</body>
+</html>

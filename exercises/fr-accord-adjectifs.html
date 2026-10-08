@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L’accord des adjectifs — drill sans fin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1f2a44; --navy-2:#2b3859; --burgundy:#8b2635; --burgundy-2:#a83244;
+  --cream:#faf5ea; --paper:#fffdf7; --ink:#1d2233; --muted:#5f6577; --line:#e3dac6;
+  --ok:#2f6b4f; --ok-bg:#e3f1e8; --bad:#8b2635; --bad-bg:#f6e0e3;
+  --board:#1f2a44; --board-ink:#faf5ea;
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --sans:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --cream:#141a2c; --paper:#1c243b; --ink:#efe9da; --muted:#a9adbd; --line:#34405f;
+    --burgundy:#d0596a; --burgundy-2:#e07484; --ok:#7fcaa0; --ok-bg:#1f3a30;
+    --bad:#f0a0ab; --bad-bg:#3e2229; --board:#0f1424; --board-ink:#faf5ea; --navy:#0f1424; --navy-2:#222c48;
+  }
+}
+*{box-sizing:border-box}
+html{font-size:18px}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px 60px}
+header.hero{background:var(--navy);color:#faf5ea;padding:34px 20px 30px;border-bottom:6px solid var(--burgundy)}
+header.hero .in{max-width:820px;margin:0 auto}
+header.hero h1{font-family:var(--serif);font-weight:800;font-size:2.1rem;line-height:1.15;margin:0 0 6px}
+header.hero p{margin:0;color:#d9d3c4;font-size:.98rem}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 14px}
+.chip{font:inherit;cursor:pointer;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;font-size:.86rem;padding:5px 13px;font-weight:500}
+.chip[aria-pressed="true"]{border-color:var(--burgundy);color:var(--burgundy);font-weight:700}
+:focus-visible{outline:3px solid var(--burgundy-2);outline-offset:2px}
+
+.board{background:var(--board);color:var(--board-ink);border-radius:12px;padding:28px 24px 26px;position:relative;overflow:hidden;min-height:150px}
+.board::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(0,0,0,.35);box-shadow:0 1px 0 rgba(255,255,255,.07);pointer-events:none}
+.board .task{font-size:.84rem;color:#c9c3b3;margin:0 0 10px}
+.board .sentence{font-family:var(--serif);font-weight:600;font-size:1.75rem;line-height:1.35;margin:0}
+.board .sub{margin:12px 0 0;font-size:.95rem;color:#d9d3c4}
+.blank{display:inline-block;min-width:5ch;border-bottom:3px solid var(--burgundy-2);color:transparent;user-select:none;margin:0 2px}
+.blank.filled{color:#f2c9cf;border-bottom-color:transparent}
+.base{font-family:var(--sans);font-size:.62em;font-weight:500;opacity:.8}
+.flip{animation:flip .38s ease-out}
+@keyframes flip{from{transform:perspective(600px) rotateX(-70deg);opacity:.2}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.flip{animation:none}}
+@media (max-width:520px){.board .sentence{font-size:1.4rem}}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 0}
+@media (max-width:520px){.opts{grid-template-columns:1fr}}
+.opt{font:inherit;font-size:1.1rem;text-align:left;cursor:pointer;background:var(--paper);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:baseline}
+.opt kbd{font-family:var(--sans);font-size:.75rem;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.opt:hover:not(:disabled){border-color:var(--navy-2)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);font-weight:700}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.typebox{display:flex;gap:10px;margin-top:16px}
+.typebox input{flex:1;min-width:0;font:inherit;font-size:1.15rem;padding:11px 14px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+.typebox input.right{border-color:var(--ok);background:var(--ok-bg)}
+.typebox input.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.accents{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.accents button{font:inherit;font-size:.95rem;cursor:pointer;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:2px 10px;min-width:2.2rem}
+.accents button:disabled{opacity:.4;cursor:default}
+.btn{font:inherit;font-weight:700;cursor:pointer;background:var(--burgundy);color:#fff;border:0;border-radius:10px;padding:11px 20px}
+@media (prefers-color-scheme: dark){.btn{color:#1a1020}}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
+.nav{display:flex;gap:10px;margin-top:14px}
+
+.feedback{margin-top:16px;border-radius:10px;padding:14px 16px;background:var(--paper);border:1px solid var(--line)}
+.feedback.ok{border-left:6px solid var(--ok)}
+.feedback.no{border-left:6px solid var(--bad)}
+.feedback .verdict{font-family:var(--serif);font-size:1.15rem}
+.feedback.ok .verdict{color:var(--ok)} .feedback.no .verdict{color:var(--bad)}
+.feedback p{margin:6px 0}
+.forms{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+@media (max-width:520px){.forms{grid-template-columns:repeat(2,1fr)}}
+.forms div{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:.78rem;color:var(--muted)}
+.forms div b{display:block;font-family:var(--serif);font-size:1.05rem;color:var(--ink)}
+.forms div.hl{border-color:var(--burgundy);color:var(--burgundy)}
+.forms div.hl b{color:var(--burgundy)}
+.gloss{color:var(--muted);font-size:.9rem}
+
+.timer{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.timer .track{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.timer .fill{height:100%;width:100%;background:var(--navy-2);border-radius:99px}
+.timer .fill.low{background:var(--burgundy)}
+.timer span{font-family:var(--serif);font-weight:800;min-width:2.4ch;text-align:right;font-size:1.05rem}
+@media (prefers-color-scheme: dark){.timer .fill{background:var(--ok)}.timer .fill.low{background:var(--burgundy)}}
+.hidden{display:none}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:22px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}
+.stat b{display:block;font-family:var(--serif);font-size:1.4rem}
+.stat span{font-size:.75rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="in">
+    <h1>L’accord des adjectifs (adjective agreement)</h1>
+    <p> Choisissez (choose) l’adjectif à la bonne forme : masculin ou féminin, singulier ou pluriel.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="chips" role="group" aria-label="Niveau">
+    <button class="chip" data-mode="s" aria-pressed="true">1. Singulier</button>
+    <button class="chip" data-mode="p" aria-pressed="false">2. Pluriel</button>
+    <button class="chip" data-mode="mix" aria-pressed="false">3. Mélange (chronométré)</button>
+  </div>
+
+  <div class="timer hidden" id="timer" aria-hidden="true"><div class="track"><div class="fill" id="timerFill"></div></div><span id="timerLbl"></span></div>
+  <div class="board flip" id="board"></div>
+  <div id="answerArea"></div>
+  <div class="nav"><button class="btn ghost" id="prevBtn">Précédent</button><button class="btn" id="nextBtn">Suivant</button></div>
+  <div id="feedback" role="status" aria-live="polite"></div>
+
+  <div class="stats" aria-label="Score">
+    <div class="stat"><b id="sStreak">0</b><span>série (streak)</span></div>
+    <div class="stat"><b id="sBest">0</b><span>record</span></div>
+    <div class="stat"><b id="sN">0</b><span>réponses</span></div>
+    <div class="stat"><b id="sPct">–</b><span>réussite</span></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const rand = n => Math.floor(Math.random()*n);
+const pick = a => a[rand(a.length)];
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const $ = id => document.getElementById(id);
+const NB = '\u00A0';
+
+/* ---------- adjectives: only regular ones (fem. = +e, plural = +s) ---------- */
+function A(m,en){
+  const f = m.endsWith('e') ? m : m+'e';
+  const mp = m.endsWith('s') ? m : m+'s';
+  const fp = f+'s';
+  return {m,f,mp,fp,en};
+}
+const COLOR = [A('rouge','red'),A('noir','black'),A('gris','gray'),A('vert','green'),A('bleu','blue'),A('rose','pink'),A('jaune','yellow')];
+const NATION = [A('américain','American'),A('français','French'),A('chinois','Chinese'),A('anglais','English'),A('japonais','Japanese'),A('allemand','German'),A('espagnol','Spanish'),A('portugais','Portuguese'),A('russe','Russian'),A('suisse','Swiss'),A('belge','Belgian')];
+const TRAIT = [A('sympathique','nice'),A('patient','patient'),A('timide','shy'),A('amusant','funny'),A('intelligent','smart'),A('poli','polite'),A('célèbre','famous'),A('charmant','charming'),A('distrait','absent-minded')];
+const PLACEADJ = [A('moderne','modern'),A('calme','quiet'),A('agréable','pleasant'),A('intéressant','interesting'),A('charmant','charming'),A('célèbre','famous'),A('populaire','popular'),A('confortable','comfortable'),A('élégant','elegant')];
+const MEDIAADJ = [A('intéressant','interesting'),A('amusant','funny'),A('triste','sad'),A('drôle','funny'),A('célèbre','famous'),A('populaire','popular'),A('facile','easy'),A('difficile','difficult'),A('passionnant','exciting'),A('fantastique','fantastic'),A('magnifique','magnificent'),A('formidable','great')];
+const PRED = [A('fatigué','tired'),A('content','happy'),A('prêt','ready'),A('ravi','delighted'),A('fâché','angry'),A('étonné','surprised'),A('occupé','busy'),A('surpris','surprised'),A('calme','calm'),A('poli','polite'),A('patient','patient'),A('malade','sick')];
+
+/* ---------- nouns with article: g = gender, n = number ---------- */
+const N = (t,g,n,v) => ({t,g,n,v});
+const V_CLOTH=['porter','chercher','aimer','adorer','détester','regarder'];
+const V_PEOPLE=['inviter','rencontrer','chercher','aimer','adorer','détester'];
+const V_HOME=['visiter','chercher','aimer','adorer','habiter dans'];
+const V_PLACE=['visiter','chercher','aimer','adorer','détester'];
+const CATS = [
+ {adj:COLOR, nouns:[
+   N('une robe','f','s'),N('une chemise','f','s'),N('une jupe','f','s'),N('un pantalon','m','s'),N('un manteau','m','s'),N('un pull','m','s'),
+   N('des chaussures','f','p'),N('des chaussettes','f','p'),N('des jupes','f','p'),N('des pantalons','m','p'),N('des manteaux','m','p'),N('des pulls','m','p')].map(x=>({...x,v:V_CLOTH}))},
+ {adj:[...TRAIT,...NATION], nouns:[
+   N('un ami','m','s'),N('une amie','f','s'),N('un étudiant','m','s'),N('une étudiante','f','s'),N('un voisin','m','s'),N('une voisine','f','s'),N('un professeur','m','s'),N('une professeure','f','s'),
+   N('des amis','m','p'),N('des amies','f','p'),N('des étudiants','m','p'),N('des étudiantes','f','p'),N('des voisins','m','p'),N('des voisines','f','p'),N('des professeurs','m','p'),N('des professeures','f','p')].map(x=>({...x,v:V_PEOPLE}))},
+ {adj:PLACEADJ, nouns:[
+   N('une maison','f','s',V_HOME),N('un appartement','m','s',V_HOME),N('une ville','f','s',V_HOME),N('un quartier','m','s',V_HOME),
+   N('des maisons','f','p',V_HOME),N('des appartements','m','p',V_HOME),N('des villes','f','p',V_HOME),N('des quartiers','m','p',V_HOME),
+   N('un café','m','s',V_PLACE),N('une bibliothèque','f','s',V_PLACE),N('un musée','m','s',V_PLACE),N('une école','f','s',V_PLACE),N('un restaurant','m','s',V_PLACE),
+   N('des cafés','m','p',V_PLACE),N('des bibliothèques','f','p',V_PLACE),N('des musées','m','p',V_PLACE),N('des écoles','f','p',V_PLACE),N('des restaurants','m','p',V_PLACE)]},
+ {adj:MEDIAADJ, nouns:[
+   N('un film','m','s',['regarder','aimer','adorer','détester']),N('des films','m','p',['regarder','aimer','adorer','détester']),
+   N('une chanson','f','s',['écouter','aimer','adorer','détester']),N('des chansons','f','p',['écouter','aimer','adorer','détester']),
+   N('un livre','m','s',['chercher','aimer','adorer','détester']),N('des livres','m','p',['chercher','aimer','adorer','détester']),
+   N('un roman','m','s',['chercher','aimer','adorer','détester']),N('des romans','m','p',['chercher','aimer','adorer','détester']),
+   N('une émission','f','s',['regarder','aimer','adorer','détester']),N('des émissions','f','p',['regarder','aimer','adorer','détester'])]}
+];
+
+/* ---------- subjects ---------- */
+const PRONS = ['je','tu','il','elle','nous','vous','ils','elles'];
+const NPS = [
+ {t:'Paul',p:'il',g:'m',n:'s'},{t:'Marc',p:'il',g:'m',n:'s'},{t:'Le professeur',p:'il',g:'m',n:'s'},{t:'Mon frère',p:'il',g:'m',n:'s'},
+ {t:'Marie',p:'elle',g:'f',n:'s'},{t:'Julie',p:'elle',g:'f',n:'s'},{t:'La professeure',p:'elle',g:'f',n:'s'},{t:'Ma sœur',p:'elle',g:'f',n:'s'},
+ {t:'Paul et Marc',p:'ils',g:'m',n:'p'},{t:'Les étudiants',p:'ils',g:'m',n:'p'},{t:'Paul et Marie',p:'ils',g:'m',n:'p'},{t:'Mes parents',p:'ils',g:'m',n:'p'},
+ {t:'Marie et Julie',p:'elles',g:'f',n:'p'},{t:'Les étudiantes',p:'elles',g:'f',n:'p'},{t:'Mes sœurs',p:'elles',g:'f',n:'p'},{t:'Ma mère et ma sœur',p:'elles',g:'f',n:'p'}
+];
+function mkSubj(onlyKnownGender){
+  if(Math.random()<0.55){
+    const ps = onlyKnownGender ? ['il','elle','ils','elles'] : PRONS;
+    const p = pick(ps);
+    const n = ['je','tu','il','elle'].includes(p) ? 's' : 'p';
+    const g = p==='il'||p==='ils' ? 'm' : p==='elle'||p==='elles' ? 'f' : null;
+    return {t:cap(p),p,n,g};
+  }
+  return {...pick(NPS)};
+}
+function conj(inf,p){
+  const [v,...rest]=inf.split(' ');
+  const end={je:'e',tu:'es',il:'e',elle:'e',nous:'ons',vous:'ez',ils:'ent',elles:'ent'}[p];
+  return [v.slice(0,-2)+end,...rest].join(' ');
+}
+function subjVerb(s,inf){
+  const c = conj(inf,s.p);
+  if(s.p==='je' && /^[aeiouhéèêâîôû]/i.test(c)) return 'J’'+c;
+  return s.t+' '+c;
+}
+
+/* ---------- forms & labels ---------- */
+const LAB = {ms:'masculin singulier',fs:'féminin singulier',mp:'masculin pluriel',fp:'féminin pluriel'};
+const LABEN = {ms:'masculine singular',fs:'feminine singular',mp:'masculine plural',fp:'feminine plural'};
+const formOf = (a,g,n) => a[(g||'m')+(n==='p'?'p':'')].toString();
+const keyOf = (g,n) => (g||'m')+n;   // 'ms','fs','mp','fp'
+const FMAP = {ms:'m',fs:'f',mp:'mp',fp:'fp'};
+function endClass(a){ return a.m.endsWith('e')?'e':a.m.endsWith('s')?'s':'x'; }
+function ruleText(a,t){
+  if(t==='ms') return `masculine singular is the basic form: <b>${a.m}</b>.`;
+  if(t==='fs') return a.m.endsWith('e') ? `${a.m} already ends in <b>-e</b>, so the feminine is the same.` : `feminine: add <b>-e</b> (${a.m} → ${a.f}).`;
+  if(t==='mp') return a.m.endsWith('s') ? `${a.m} already ends in <b>-s</b>, so the masculine plural is the same.` : `plural: add <b>-s</b> (${a.m} → ${a.mp}).`;
+  if(a.m.endsWith('e')) return `plural: ${a.m} already ends in -e, so just add <b>-s</b> (${a.fp}).`;
+  return `feminine + plural: add <b>-e</b>, then <b>-s</b> (${a.m} → ${a.f} → ${a.fp}).`;
+}
+
+/* ---------- question generators ---------- */
+const blank = '<span class="blank" id="theBlank">___</span>';
+function wantNum(mode){ return mode==='s'?'s':mode==='p'?'p':null; }
+
+function qAttr(mode){
+  const want = wantNum(mode);
+  for(let k=0;k<100;k++){
+    const cat = pick(CATS), noun = pick(cat.nouns);
+    if(want && noun.n!==want) continue;
+    const s = mkSubj(false), adj = pick(cat.adj), verb = pick(noun.v);
+    const target = keyOf(noun.g,noun.n);
+    const alt = s.g ? keyOf(s.g,s.n) : null;
+    return {kind:'attr',adj,target,alt,noun,s,
+      key:target+':'+endClass(adj),
+      html:`${subjVerb(s,verb)} ${noun.t} ${blank} <span class="base">(${adj.m})</span>.`,
+      sub:`(${adj.en})`,
+      full:`${subjVerb(s,verb)} ${noun.t} ${adj[FMAP[target]]}.`};
+  }
+}
+function qPred(mode){
+  const want = wantNum(mode);
+  for(let k=0;k<100;k++){
+    const s = mkSubj(true);
+    if(want && s.n!==want) continue;
+    const adj = pick(PRED), verb = pick(['arriver','rentrer','rester']);
+    const target = keyOf(s.g,s.n);
+    return {kind:'pred',adj,target,s,
+      key:target+':'+endClass(adj),
+      html:`${subjVerb(s,verb)} ${blank} <span class="base">(${adj.m})</span>.`,
+      sub:`(${adj.en})`,
+      full:`${subjVerb(s,verb)} ${adj[FMAP[target]]}.`};
+  }
+}
+function makeOptions(a,ans){
+  const set=[ans];
+  [a.m,a.f,a.mp,a.fp].forEach(x=>{ if(!set.includes(x)) set.push(x); });
+  // over-application errors for adjectives that already end in -e
+  if(a.m.endsWith('e')) [a.m+'e',a.m+'es'].forEach(x=>{ if(set.length<4 && !set.includes(x)) set.push(x); });
+  // keep the correct answer plus up to 3 distractors
+  const rest=set.slice(1);
+  for(let i=rest.length-1;i>0;i--){const j=rand(i+1);[rest[i],rest[j]]=[rest[j],rest[i]];}
+  const opts=[ans,...rest.slice(0,3)];
+  for(let i=opts.length-1;i>0;i--){const j=rand(i+1);[opts[i],opts[j]]=[opts[j],opts[i]];}
+  return opts;
+}
+function newQuestion(mode){
+  const q = Math.random()<0.65 ? qAttr(mode) : qPred(mode);
+  q.ans = q.adj[FMAP[q.target]];
+  q.options = makeOptions(q.adj,q.ans);
+  q.task = 'Choisis l’adjectif à la bonne forme (pick the adjective in the correct form) :';
+  return q;
+}
+
+/* ---------- feedback ---------- */
+const OK = ['Bravo'+NB+'!','Exactement'+NB+'!','Très bien'+NB+'!','Parfait'+NB+'!','Oui'+NB+'!'];
+const NO = ['Pas tout à fait.','Presque.','Regardons ça.','Pas cette fois.'];
+function whyText(q){
+  const t=q.target, a=q.adj;
+  if(q.kind==='attr') return `<p>The adjective describes the noun, <b>${q.noun.t}</b>: ${LABEN[t]} (${LAB[t]}). ${cap(ruleText(a,t))}</p>`;
+  return `<p>The adjective agrees with the subject, <b>${q.s.t}</b>: ${LABEN[t]} (${LAB[t]}). ${cap(ruleText(a,t))}</p>`;
+}
+function diagnose(q,typed){
+  const a=q.adj;
+  if(q.kind==='attr' && q.alt && q.alt!==q.target && typed===a[FMAP[q.alt]]) return `<p>You made it agree with the subject (<b>${q.s.t}</b>). The adjective describes the noun, <b>${q.noun.t}</b>.</p>`;
+  if(typed===a.m && q.target!=='ms') return `<p>You left the adjective in its basic form. It has to agree here.</p>`;
+  if(![a.m,a.f,a.mp,a.fp].includes(typed)) return `<p><b>${typed}</b> is not a form of this adjective. ${a.m.endsWith('e')?`${a.m} already ends in -e: no extra -e.`:''}</p>`;
+  for(const k of ['ms','fs','mp','fp']){ if(k!==q.target && typed===a[FMAP[k]]) return `<p><b>${typed}</b> is the ${LABEN[k]} form. Here we need the ${LABEN[q.target]}.</p>`; }
+  return '';
+}
+function formsGrid(q){
+  const a=q.adj;
+  const cell=(k,l)=>`<div class="${k===q.target?'hl':''}">${l}<b>${a[FMAP[k]]}</b></div>`;
+  return `<div class="forms">${cell('ms','masc. sg.')}${cell('fs','fém. sg.')}${cell('mp','masc. pl.')}${cell('fp','fém. pl.')}</div>`;
+}
+
+/* ---------- timer ---------- */
+const timers={};
+function stopTimer(k){ if(timers[k]){clearInterval(timers[k]);timers[k]=null;} }
+function startTimer(k,ids,secs,onExpire){
+  stopTimer(k);
+  const fill=$(ids[0]),lbl=$(ids[1]);const t0=Date.now();
+  fill.classList.remove('low');fill.style.width='100%';lbl.textContent=secs;
+  timers[k]=setInterval(()=>{
+    const left=Math.max(0,secs*1000-(Date.now()-t0));
+    fill.style.width=(100*left/(secs*1000))+'%';
+    lbl.textContent=Math.ceil(left/1000);
+    fill.classList.toggle('low',left<=3000);
+    if(left<=0){stopTimer(k);onExpire();}
+  },100);
+}
+const SECS=30;
+
+/* ---------- session state (endless, with back/forward) ---------- */
+const st={mode:'s',h:[],i:-1,n:0,ok:0,streak:0,best:0,miss:{}};
+const cur=()=>st.h[st.i];
+
+function newEntry(){
+  const last = st.h.length ? st.h[st.h.length-1].q.key : null;
+  let best=null,bw=-1;
+  for(let k=0;k<6;k++){
+    const q=newQuestion(st.mode);
+    if(q.key===last && k<5) continue;
+    const w=(1+2*(st.miss[q.key]||0))*Math.random();
+    if(w>bw){bw=w;best=q;}
+  }
+  return {q:best,done:false,ok:null,picked:null,note:''};
+}
+function goNext(){
+  if(st.i<st.h.length-1) st.i++;
+  else { st.h.push(newEntry()); if(st.h.length>200) st.h.shift(); st.i=st.h.length-1; }
+  render();
+}
+function goPrev(){ if(st.i>0){st.i--;render();} }
+function resetSession(){ st.h=[];st.i=-1;goNext(); }
+
+function render(){
+  const e=cur(),q=e.q,b=$('board');
+  stopTimer('quiz');
+  b.classList.remove('flip');void b.offsetWidth;b.classList.add('flip');
+  b.innerHTML=`<p class="task">${q.task}</p><p class="sentence">${q.html}</p><p class="sub">${q.sub}</p>`;
+  $('feedback').innerHTML='';
+  const timed=st.mode==='mix';
+  $('timer').classList.toggle('hidden',!timed);
+  $('answerArea').innerHTML='<div class="opts">'+q.options.map((o,i)=>`<button class="opt" data-i="${i}"><kbd>${i+1}</kbd><span>${o}</span></button>`).join('')+'</div>';
+  document.querySelectorAll('#answerArea .opt').forEach(btn=>btn.addEventListener('click',()=>answer(parseInt(btn.dataset.i,10))));
+  if(e.done) applyDone();
+  else { if(timed) startTimer('quiz',['timerFill','timerLbl'],SECS,onTimeout); }
+  updateNav();
+}
+function updateNav(){
+  $('prevBtn').disabled=st.i<=0;
+  $('nextBtn').textContent=cur().done?'Suivant':'Passer (skip)';
+}
+function record(ok){
+  st.n++; if(ok){st.ok++;st.streak++;st.best=Math.max(st.best,st.streak);} else st.streak=0;
+  const k=cur().q.key; st.miss[k]=ok?Math.max(0,(st.miss[k]||0)-1):(st.miss[k]||0)+1;
+  $('sStreak').textContent=st.streak;$('sBest').textContent=st.best;$('sN').textContent=st.n;
+  $('sPct').textContent=Math.round(100*st.ok/st.n)+'%';
+}
+function applyDone(){
+  const e=cur(),q=e.q;
+  document.querySelectorAll('#answerArea .opt').forEach(btn=>{
+    const o=q.options[btn.dataset.i];
+    btn.disabled=true;
+    if(o===q.ans) btn.classList.add('right');
+    else if(o===e.picked) btn.classList.add('wrong');
+  });
+  const bl=$('theBlank'); if(bl){bl.textContent=q.ans;bl.classList.add('filled');}
+  const diag = !e.ok && e.picked ? diagnose(q,e.picked) : '';
+  $('feedback').innerHTML=`<div class="feedback ${e.ok?'ok':'no'}"><p><span class="verdict">${e.ok?pick(OK):pick(NO)}</span></p>${whyText(q)}${diag}${e.note?`<p>${e.note}</p>`:''}<p class="gloss">${q.full}</p>${formsGrid(q)}</div>`;
+}
+function finish(ok){ record(ok);applyDone();updateNav();$('nextBtn').focus(); }
+function onTimeout(){
+  const e=cur(); if(e.done) return;
+  e.done=true;e.ok=false;e.note='<b>Temps écoulé</b> (time’s up).';
+  finish(false);
+}
+function answer(i){
+  const e=cur(); if(e.done) return;
+  stopTimer('quiz');
+  e.done=true;e.picked=e.q.options[i];e.ok=e.picked===e.q.ans;
+  finish(e.ok);
+}
+
+$('prevBtn').addEventListener('click',goPrev);
+$('nextBtn').addEventListener('click',goNext);
+document.querySelectorAll('.chip').forEach(ch=>ch.addEventListener('click',()=>{
+  document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===ch));
+  st.mode=ch.dataset.mode; resetSession();
+}));
+document.addEventListener('keydown',e=>{
+  if(!cur().done && /^[1-4]$/.test(e.key) && parseInt(e.key,10)<=cur().q.options.length){ answer(parseInt(e.key,10)-1); return; }
+  if(e.key==='ArrowRight' || (cur().done && e.key==='Enter' && document.activeElement!==$('nextBtn'))){ e.preventDefault(); goNext(); }
+  else if(e.key==='ArrowLeft') goPrev();
+});
+
+goNext();
+</script>
+</body>
+</html>

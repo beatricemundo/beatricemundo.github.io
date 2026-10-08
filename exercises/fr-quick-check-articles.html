@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Check: Un, le ou de? (séries illimitées)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1B2A4A; --navy-light: #2E4270; --burgundy: #7B1E3A; --burgundy-light: #A13350;
+    --cream: #FAF3E8; --cream-dark: #F2E7D5; --ink: #25293B; --gold: #C89B4A;
+    --green: #2f6b3e; --red: #a33;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px 20px; background: var(--cream); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 17px; line-height: 1.6; }
+  .page { max-width: 720px; margin: 0 auto; background: #fff; border: 1px solid var(--cream-dark); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 18px rgba(27,42,74,0.1); }
+  .header { background: var(--navy); color: var(--cream); padding: 26px 36px; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 1.7rem; margin: 0; }
+  .progress { padding: 12px 36px; font-size: 1rem; color: #777; border-bottom: 1px solid var(--cream-dark); display: flex; justify-content: space-between; align-items: center; }
+  .dots { display: flex; gap: 6px; flex-wrap: wrap; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--cream-dark); cursor: pointer; border: 1px solid transparent; }
+  .dot.current { border-color: var(--navy); }
+  .dot.answered { background: var(--burgundy); }
+  .quiz-body { padding: 30px 36px; }
+  .question-block { display: none; }
+  .question-block.active { display: block; }
+  .prompt { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--ink); margin-bottom: 24px; line-height: 1.8; }
+  .blank-btn {
+    display: inline-block;
+    min-width: 90px;
+    text-align: center;
+    border-bottom: 2px solid var(--navy-light);
+    color: var(--navy-light);
+    font-weight: 700;
+    cursor: pointer;
+    padding: 2px 10px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .blank-btn:hover { background: var(--cream); }
+  .blank-btn.empty { color: #aaa; font-weight: 400; }
+  .blank-btn.filled { color: var(--burgundy); border-bottom-color: var(--burgundy); }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  button { border: none; padding: 11px 22px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; }
+  button.prev-btn { background: var(--cream-dark); color: var(--ink); }
+  button.prev-btn:disabled { opacity: 0.4; cursor: default; }
+  button.next-btn { background: var(--navy); color: #fff; }
+  button.validate-btn { background: var(--burgundy); color: #fff; }
+  button:hover:not(:disabled) { opacity: 0.9; }
+  .results { display: none; }
+  .results h2 { font-family: 'Playfair Display', serif; color: var(--burgundy); text-align: center; }
+  .results .score { font-size: 2.3rem; color: var(--navy); font-weight: 700; margin: 10px 0 26px; text-align: center; }
+  .review-item { border-top: 1px solid var(--cream-dark); padding: 16px 0; }
+  .review-item .rq { font-weight: 700; margin-bottom: 6px; font-size: 1.05rem; }
+  .review-item .ra { font-size: 1rem; margin-bottom: 4px; }
+  .review-item .ra.wrong { color: var(--red); }
+  .review-item .ra.right { color: var(--green); }
+  .review-item .rexp { font-size: 0.95rem; color: #666; font-style: italic; }
+  .results-actions { text-align: center; margin-top: 24px; }
+
+  .hint { font-size: 0.95rem; color: #777; margin: 0 0 14px; }
+  .gloss { font-size: 0.98rem; color: #777; font-style: italic; margin: -12px 0 26px; }
+  .blank-btn:focus-visible, .modal-option:focus-visible, .dot:focus-visible, button:focus-visible { outline: 3px solid var(--burgundy); outline-offset: 2px; }
+  .dot { position: relative; }
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(37,41,59,0.45);
+    align-items: center; justify-content: center;
+    z-index: 20;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px 28px;
+    min-width: 240px;
+    max-width: 340px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  .modal-box h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--navy);
+    font-size: 1.1rem;
+    margin: 0 0 16px;
+    text-align: center;
+  }
+  .modal-options { display: flex; flex-direction: column; gap: 9px; }
+  .modal-option {
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 11px 16px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .modal-option:hover { background: var(--cream); border-color: var(--navy); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header"><h1>Quick Check: Un, le ou de?</h1></div>
+  <div class="progress"><span id="progress-text">Question 1 de 10</span><div class="dots" id="dots"></div></div>
+  <div class="quiz-body">
+    <div id="quiz-container"></div>
+    <div class="nav-row" id="nav-row">
+      <button class="prev-btn" id="prev-btn" onclick="goPrev()">← Précédent</button>
+      <button class="next-btn" id="next-btn" onclick="goNext()">Suivant →</button>
+      <button class="validate-btn" id="validate-btn" onclick="validateQuiz()" style="display:none;">Corriger</button>
+    </div>
+    <div class="results" id="results">
+      <h2>Résultat</h2>
+      <div class="score" id="score-display"></div>
+      <div id="review-list"></div>
+      <div class="results-actions"><button class="validate-btn" onclick="restartQuiz()">Nouvelle série</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <h3 id="modal-title">Choisissez (choose) l'article correct</h3>
+    <div class="modal-options" id="modal-options"></div>
+  </div>
+</div>
+
+<script>
+/* ===== Générateur de séries (illimité) ===== */
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const join = (art, w) => art.endsWith("'") ? art + w : art + " " + w;
+const N = (w, g, pl, v, gl, tails) => ({ w, g, pl, v, gl, tails });
+const plGloss = g => g.endsWith("y") ? g.slice(0, -1) + "ies" : g + "s";
+
+const LOC = ["près de l'université", "dans mon quartier", "sur notre campus", "dans le quartier universitaire"];
+
+/* [singulier, genre, voyelle?, glose, pluriel] */
+const PLACES = [
+  ["gymnase", "m", 0, "gym", "gymnases"],
+  ["cafétéria", "f", 0, "cafeteria", "cafétérias"],
+  ["bibliothèque", "f", 0, "library", "bibliothèques"],
+  ["librairie", "f", 0, "bookstore", "librairies"],
+  ["banque", "f", 0, "bank", "banques"],
+  ["parc", "m", 0, "park", "parcs"],
+  ["arrêt de bus", "m", 1, "bus stop", "arrêts de bus"],
+  ["restaurant", "m", 0, "restaurant", "restaurants"],
+  ["supermarché", "m", 0, "supermarket", "supermarchés"],
+  ["pharmacie", "f", 0, "pharmacy", "pharmacies"],
+  ["gare", "f", 0, "train station", "gares"],
+  ["café", "m", 0, "café", "cafés"],
+  ["magasin", "m", 0, "store", "magasins"],
+  ["amphithéâtre", "m", 1, "lecture hall", "amphithéâtres"],
+  ["résidence universitaire", "f", 0, "dorm", "résidences universitaires"],
+  ["salle de classe", "f", 0, "classroom", "salles de classe"]
+];
+const SING = PLACES.map(p => N(p[0], p[1], 0, p[2], p[3], LOC));
+const PLUR_P = PLACES.map(p => N(p[4], p[1], 1, p[2], plGloss(p[3]), LOC));
+const PLUR_X = [
+  N("étudiants", "m", 1, 1, "students", ["sur notre campus", "à la bibliothèque", "dans la salle de classe"]),
+  N("arbres", "m", 1, 1, "trees", ["sur notre campus", "près de l'université"]),
+  N("bancs", "m", 1, 0, "benches", ["sur notre campus", "dans le parc"]),
+  N("places", "f", 1, 0, "seats", ["dans la salle de classe", "à la bibliothèque"]),
+  N("ordinateurs", "m", 1, 1, "computers", ["à la bibliothèque", "dans la salle de classe"]),
+  N("livres", "m", 1, 0, "books", ["à la bibliothèque", "dans la librairie"])
+];
+const PLUR = PLUR_P.concat(PLUR_X);
+const CONLY = [
+  N("toilettes", "f", 1, 0, "restrooms"), N("clés", "f", 1, 0, "keys"),
+  N("escaliers", "m", 1, 1, "stairs"), N("ascenseurs", "m", 1, 1, "elevators")
+];
+const GENERIC = [
+  N("musique", "f", 0, 0, "music"), N("sport", "m", 0, 0, "sports"), N("cinéma", "m", 0, 0, "movies"),
+  N("hiver", "m", 0, 1, "winter"), N("été", "m", 0, 1, "summer"), N("pizza", "f", 0, 0, "pizza"),
+  N("chocolat", "m", 0, 0, "chocolate"), N("histoire", "f", 0, 1, "history"), N("art", "m", 0, 1, "art"),
+  N("bruit", "m", 0, 0, "noise"), N("silence", "m", 0, 0, "silence"), N("football", "m", 0, 0, "soccer"),
+  N("jazz", "m", 0, 0, "jazz"), N("théâtre", "m", 0, 0, "theater"), N("nature", "f", 0, 0, "nature"),
+  N("océan", "m", 0, 1, "ocean"), N("examens", "m", 1, 1, "exams"), N("devoirs", "m", 1, 0, "homework"),
+  N("chats", "m", 1, 0, "cats"), N("chiens", "m", 1, 0, "dogs"), N("voyages", "m", 1, 0, "trips"),
+  N("films", "m", 1, 0, "movies"), N("mathématiques", "f", 1, 0, "math"), N("langues", "f", 1, 0, "languages"),
+  N("fleurs", "f", 1, 0, "flowers"), N("animaux", "m", 1, 1, "animals"), N("oiseaux", "m", 1, 1, "birds")
+];
+const SUBJ = [
+  { id: "je", f: ["J'aime", "J'adore", "Je déteste", "Je préfère"] },
+  { id: "tu", f: ["Tu aimes", "Tu adores", "Tu détestes", "Tu préfères"] },
+  { id: "il", f: ["Il aime", "Il adore", "Il déteste", "Il préfère"] },
+  { id: "elle", f: ["Elle aime", "Elle adore", "Elle déteste", "Elle préfère"] },
+  { id: "nous", f: ["Nous aimons", "Nous adorons", "Nous détestons", "Nous préférons"] },
+  { id: "frere", f: ["Mon frère aime", "Mon frère adore", "Mon frère déteste", "Mon frère préfère"] },
+  { id: "soeur", f: ["Ma sœur aime", "Ma sœur adore", "Ma sœur déteste", "Ma sœur préfère"] },
+  { id: "amis", f: ["Mes amis aiment", "Mes amis adorent", "Mes amis détestent", "Mes amis préfèrent"] }
+];
+const VERBS = ["aimer", "adorer", "détester", "préférer"];
+const DEF4 = ["le", "la", "l'", "les"];
+
+const indef = n => n.pl ? "des" : (n.g === "m" ? "un" : "une");
+const otherIndef = n => n.g === "m" ? "une" : "un";
+const def = n => n.pl ? "les" : (n.v ? "l'" : (n.g === "m" ? "le" : "la"));
+const deForm = n => n.v ? "d'" : "de";
+const wrongDe = n => n.v ? "de" : "d'";
+const genderOf = n => n.g === "m" ? "masculine" : "feminine";
+
+function formReason(n) {
+  if (n.pl) return cap(n.w) + " is plural: les " + n.w + ".";
+  if (n.v) return cap(n.w) + " starts with a vowel or a mute h, so le/la becomes l': l'" + n.w + ".";
+  return cap(n.w) + " is " + genderOf(n) + ": " + def(n) + " " + n.w + ".";
+}
+
+function frame(lead, noun, tail) {
+  if (rnd(2)) return { before: cap(lead), after: " " + noun + " " + tail + ".", v: 1 };
+  return { before: cap(tail) + ", " + lead, after: " " + noun + ".", v: 2 };
+}
+
+function build(n, before, after, opts, answer, explanation, type, extra) {
+  const options = shuffle(opts);
+  return {
+    q: { before, after, gloss: n.gl, options, correct: options.indexOf(answer), explanation },
+    key: type + "|" + n.w + "|" + extra,
+    w: n.w
+  };
+}
+
+function genA(plural) {
+  const n = plural ? pick(PLUR) : pick(SING);
+  const tail = pick(n.tails || LOC);
+  const f = frame("il y a ", n.w, tail);
+  const ans = indef(n);
+  const opts = plural ? ["des", "les", "de", "d'"] : [ans, otherIndef(n), def(n), "de"];
+  const exp = plural
+    ? "Il y a introduces something unspecified. " + cap(n.w) + " is plural: des " + n.w + "."
+    : "Il y a introduces something unspecified, so use an indefinite article. " + cap(n.w) + " is " + genderOf(n) + ": " + ans + " " + n.w + ".";
+  return build(n, f.before, f.after, opts, ans, exp, "A", tail + f.v);
+}
+
+function genB() {
+  const n = pick(GENERIC), s = pick(SUBJ), vi = rnd(4);
+  const tu = s.id === "tu";
+  const exp = "After " + VERBS[vi] + " you use the definite article to talk about things in general. " + formReason(n);
+  return build(n, s.f[vi] + " ", " " + n.w + (tu ? "?" : "."), DEF4, def(n), exp, "B", s.id + vi);
+}
+
+function genC() {
+  const pool = SING.concat(PLUR, CONLY);
+  const n = pick(pool);
+  const pat = n.pl ? pick([["Où sont ", "?"], ["Je cherche ", "."], ["Tu connais ", "?"]])
+                   : pick([["Où est ", "?"], ["Je cherche ", "."], ["Tu connais ", "?"]]);
+  const exp = "You are referring to something specific and known, so use the definite article. " + formReason(n);
+  return build(n, pat[0], " " + n.w + pat[1], DEF4, def(n), exp, "C", pat[0]);
+}
+
+function genD() {
+  const n = pick(SING), tail = pick(LOC);
+  const f = frame("il n'y a pas ", n.w, tail);
+  const ans = deForm(n);
+  const exp = "After a negation (ne ... pas), un/une/des become de (d' before a vowel): pas " + join(ans, n.w) + ".";
+  return build(n, f.before, f.after, [ans, indef(n), "des", wrongDe(n)], ans, exp, "D", tail + f.v);
+}
+
+function genE() {
+  const n = pick(PLUR), q = pick(["beaucoup", "assez", "trop"]);
+  const tail = pick(n.tails || LOC);
+  const f = frame("il y a " + q + " ", n.w, tail);
+  const ans = deForm(n);
+  const exp = "After an expression of quantity (" + q + "), use de, or d' before a vowel: " + q + " " + join(ans, n.w) + ".";
+  return build(n, f.before, f.after, [ans, "des", "les", wrongDe(n)], ans, exp, "E", q + tail + f.v);
+}
+
+const MAKERS = { A1: () => genA(false), A2: () => genA(true), B: genB, C: genC, D: genD, E: genE };
+const used = new Set();
+
+function generateSet() {
+  if (used.size > 4000) used.clear();
+  const plan = shuffle(["A1", "A2", "B", "B", "C", "C", "D", "D", "E", "E"]);
+  const words = new Set();
+  const out = [];
+  for (const t of plan) {
+    let r = null;
+    for (let tries = 0; tries < 80; tries++) {
+      const c = MAKERS[t]();
+      if (words.has(c.w)) continue;
+      if (used.has(c.key) && tries < 50) continue;
+      r = c; break;
+    }
+    if (!r) r = MAKERS[t]();
+    words.add(r.w); used.add(r.key); out.push(r.q);
+  }
+  return out;
+}
+
+let setNumber = 1;
+let questions = generateSet();
+let current = 0;
+let answers = new Array(questions.length).fill(null);
+let modalTargetQuestion = null;
+
+function renderDots() {
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  questions.forEach((q, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === current ? ' current' : '') + (answers[i] !== null ? ' answered' : '');
+    dot.setAttribute('role', 'button');
+    dot.tabIndex = 0;
+    dot.setAttribute('aria-label', 'Question ' + (i + 1));
+    dot.onclick = () => { current = i; renderQuestion(); };
+    dot.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); current = i; renderQuestion(); } };
+    dots.appendChild(dot);
+  });
+}
+
+function renderQuestion() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  const q = questions[current];
+  const block = document.createElement('div');
+  block.className = 'question-block active';
+
+  const hint = document.createElement('p');
+  hint.className = 'hint';
+  hint.textContent = 'Cliquez (click) sur le blanc pour choisir l\'article.';
+  block.appendChild(hint);
+
+  const prompt = document.createElement('div');
+  prompt.className = 'prompt';
+
+  const beforeText = document.createTextNode(q.before);
+  prompt.appendChild(beforeText);
+
+  const blank = document.createElement('span');
+  const hasAnswer = answers[current] !== null;
+  blank.className = 'blank-btn ' + (hasAnswer ? 'filled' : 'empty');
+  blank.textContent = hasAnswer ? q.options[answers[current]] : '________';
+  blank.setAttribute('role', 'button');
+  blank.tabIndex = 0;
+  blank.setAttribute('aria-label', 'Choisir l\'article, question ' + (current + 1));
+  blank.onclick = () => openModal(current);
+  blank.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(current); } };
+  prompt.appendChild(blank);
+
+  const afterText = document.createTextNode(q.after);
+  prompt.appendChild(afterText);
+
+  block.appendChild(prompt);
+  const gl = document.createElement('div');
+  gl.className = 'gloss';
+  gl.textContent = '(' + q.gloss + ')';
+  block.appendChild(gl);
+  container.appendChild(block);
+
+  document.getElementById('progress-text').textContent = `Série ${setNumber} · Question ${current + 1} de ${questions.length}`;
+  document.getElementById('prev-btn').disabled = current === 0;
+  const isLast = current === questions.length - 1;
+  document.getElementById('next-btn').style.display = isLast ? 'none' : 'inline-block';
+  document.getElementById('validate-btn').style.display = isLast ? 'inline-block' : 'none';
+  renderDots();
+}
+
+function openModal(qIndex) {
+  modalTargetQuestion = qIndex;
+  const optionsDiv = document.getElementById('modal-options');
+  optionsDiv.innerHTML = '';
+  questions[qIndex].options.forEach((word, i) => {
+    const opt = document.createElement('div');
+    opt.className = 'modal-option';
+    opt.textContent = word;
+    opt.setAttribute('role', 'button');
+    opt.tabIndex = 0;
+    opt.onclick = () => chooseAnswer(i);
+    opt.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chooseAnswer(i); } };
+    optionsDiv.appendChild(opt);
+  });
+  document.getElementById('modal-overlay').classList.add('open');
+  const first = optionsDiv.firstChild; if (first) first.focus();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  modalTargetQuestion = null;
+}
+
+function chooseAnswer(i) {
+  answers[modalTargetQuestion] = i;
+  closeModal();
+  renderQuestion();
+}
+
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('modal-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-overlay') closeModal();
+});
+
+function goPrev() { if (current > 0) { current--; renderQuestion(); } }
+function goNext() { if (current < questions.length - 1) { current++; renderQuestion(); } }
+
+function validateQuiz() {
+  if (answers.includes(null)) {
+    current = answers.indexOf(null);
+    renderQuestion();
+    alert('Répondez à toutes les questions avant de corriger. Je vous ai ramené à la première question sans réponse.');
+    return;
+  }
+  let score = 0;
+  const reviewList = document.getElementById('review-list');
+  reviewList.innerHTML = '';
+  questions.forEach((q, i) => {
+    const isCorrect = answers[i] === q.correct;
+    if (isCorrect) score++;
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    const rq = document.createElement('div');
+    rq.className = 'rq';
+    rq.textContent = `${i + 1}. ${q.before}___${q.after}`;
+    item.appendChild(rq);
+    const ra = document.createElement('div');
+    ra.className = 'ra ' + (isCorrect ? 'right' : 'wrong');
+    ra.textContent = isCorrect ? `✓ ${q.options[answers[i]]}` : `✗ Votre réponse : ${q.options[answers[i]]} — Correct : ${q.options[q.correct]}`;
+    item.appendChild(ra);
+    const rexp = document.createElement('div');
+    rexp.className = 'rexp';
+    rexp.textContent = q.explanation;
+    item.appendChild(rexp);
+    reviewList.appendChild(item);
+  });
+  document.getElementById('quiz-container').style.display = 'none';
+  document.getElementById('nav-row').style.display = 'none';
+  document.querySelector('.progress').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('score-display').textContent = `${score} / ${questions.length}`;
+}
+
+function restartQuiz() {
+  setNumber++;
+  questions = generateSet();
+  current = 0;
+  answers = new Array(questions.length).fill(null);
+  document.getElementById('quiz-container').style.display = 'block';
+  document.getElementById('nav-row').style.display = 'flex';
+  document.querySelector('.progress').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
